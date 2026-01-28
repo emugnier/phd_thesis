@@ -1,0 +1,107 @@
+\section{Localizing Missing Assertions}\label{sec:placeholder}
+
+To help the LLM localize the assertion,
+\tool finds a potential location for the missing assertion in a failing proof.
+%
+As a running example throughout this section, we use the lemma in \autoref{fig:union-size},
+where both post-conditions are violated,
+unless an assertion is added inside the \T{if} branch in lines 7--10.
+
+\begin{figure}
+\begin{dafny}
+lemma LemmaUnionSize<X>(xs: set<X>, ys: set<X>)
+    ensures |xs + ys| >= |xs|
+    ensures |xs + ys| >= |ys|
+{
+    if ys == {} {
+    } else {
+        var y :| y in ys;
+        if y in xs {
+            var xr := xs - {y};
+            var yr := ys - {y};
+            LemmaUnionSize(xr, yr);
+        } else {...}
+}}
+\end{dafny}
+\begin{dafnyNoLines}[basicstyle=\footnotesize\ttfamily,xleftmargin=0pt,xrightmargin=0pt]
+(*@Error: a postcondition could not be proved on this return path@*)
+    if y in xs {
+(*@Related location: this is the postcondition that could not be proved@*)
+    ensures |xs + ys| >= |xs|
+(*@Error: a postcondition could not be proved on this return path@*)
+    if y in xs {
+(*@Related location: this is the postcondition that could not be proved@*)
+    ensures |xs + ys| >= |ys|
+\end{dafnyNoLines}
+\caption{A failing Dafny lemma with complex control flow.}\label{fig:union-size}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=.6\columnwidth]{chapters/laurel/fig/cfg.pdf}
+\caption{Control flow graph (CFG) of the lemma in \autoref{fig:union-size}.
+The highlighted \T{assert} corresponds to the first violation from the error message.
+Orange circles denote candidate placeholder locations, \emph{were the faulty branch absent from the error message}.}\label{fig:cfg}
+\end{figure}
+
+At a high level, the localization proceeds in three steps:
+\begin{enumerate*}[label=(\arabic*)]
+\item \emph{desugaring} the Dafny program into an intermediate representation;
+\item \emph{analyzing the error message} to identify the violations and the faulty branch; and
+\item \emph{determining the placeholder locations} based on the control flow of the lemma and the information extracted from the error message.
+\end{enumerate*}
+
+\paragraph{Intermediate Representation}
+
+To simplify the analysis, \tool operates at the level of intermediate representation
+that Dafny uses to generate verification conditions~\cite{LEINO2005209,leino2008boogie}.
+%
+In this representation, the body of the lemma is represented as an acyclic \emph{control flow graph} (CFG),
+and all specifications, calls, and loops are desugared into primitive \T{assume} and \T{assert} statements.
+%
+For example, the lemma in \autoref{fig:union-size} is desugared into the CFG shown in \autoref{fig:cfg};
+here, the \T{assert} statements in node~7 of the CFG correspond to the post-conditions of the original lemma,
+and instead of the call in line~10, node~4 simply assumes its post-conditions
+(if the call had a pre-condition, it would first be asserted).
+
+\paragraph{Error Message Analysis}
+
+We formalize a Dafny error message as a sequence of \emph{violations},
+where each violation is associated with an \T{assert} statement in the CFG that could not be proved.
+%
+In our example, the error message in \autoref{fig:union-size} contains two violations,
+each associated with one \T{assert} statements in basic block~7 of the CFG.
+%
+\tool handles each violation separately, in the order they appear in the CFG;
+for the rest of this section let us focus on the first violation.
+
+For some violations,
+the error message also identifies the \emph{faulty branch},
+which corresponds to a node in the CFG on the path from the entry to the violation--node 4 in our example.
+
+\paragraph{Placeholder Locations}
+
+Given a violation, \tool determines the set of candidate locations for the assertion placeholder,
+based on the following considerations:
+\begin{enumerate}[left=0pt]
+\item the placeholder should be \emph{as close as possible before} the violation in the CFG;
+this allows the assertion to have the most influence on the solver when it tries to prove the violated assertion;
+\item if the enclosing CFG node of the violation has \emph{ancestors that contain additional assumptions or local variables},
+locations inside those ancestors should also be included,
+because assertions placed inside those nodes have access to the additional assumptions and variables;
+\item in the presence of the \emph{faulty branch} node,
+only locations inside that node should be included.
+\end{enumerate}
+
+Returning to our example, if we assume that the error message does not identify the faulty branch,
+candidate placeholder locations are denoted with orange circles in \autoref{fig:cfg}.
+%
+They are located in nodes~2, 4, and 5 because those are the ancestors of node~7 with additional assumptions and variables;
+the candidate locations are at the end of their respective nodes,
+since this makes them closer to the violation and also ensures that they can benefit from all the assumptions and variables in the node.
+%
+Once \tool takes into account the faulty branch information, however,
+the only remaining candidate location is at the end of node~4.
+%
+Indeed, adding the assertion \T{assert xr + yr == xs + ys - {y};} at this location fixes the violation;
+note that this assertion uses the local variables \T{xr}, \T{yr}, and \T{y} that are in scope at this location,
+but not, \eg, inside node~7.

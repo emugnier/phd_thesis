@@ -8,3 +8,4 @@
 - [ ] Vita
 - [ ] Abstract
 - [ ] Intro
+- [ ] Check \begin{enumerate}[label=\bfseries RQ\arabic*).] instead of RQ1 in eval.tex 

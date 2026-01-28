@@ -3,6 +3,7 @@
 % It isn't clear if Times is required. The OGS manual lists several
 % "standard fonts" but never says they need to be used.
 \usepackage{mathptmx}
+\usepackage{amsmath,amssymb}
 \usepackage[NoDate]{currvita}
 \usepackage{array}
 \usepackage{tabularx}
@@ -13,8 +14,14 @@
 \usepackage{graphicx}
 \usepackage{cleveref}
 \usepackage{listings}
+\usepackage[inline]{enumitem}
 \usepackage{xspace}
-\usepackage{natbib}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{subcaption}
+\usepackage{fancyvrb}
+\usepackage{tcolorbox}
+\usepackage[numbers]{natbib}
 \usepackage{dafny}
 \AtBeginDocument{%
 	\settowidth\cvlabelwidth{\cvlabelfont 0000--0000}%
@@ -115,26 +122,30 @@ Good thing it was not a snake.
 \chapter{On the Impact of Formal Verification on Software Development}
 
 \input{chapters/userstudy/intro}
-
 \input{chapters/userstudy/background}
-
 \input{chapters/userstudy/method}
-
 \input{chapters/userstudy/build}
 \input{chapters/userstudy/specification}
 \input{chapters/userstudy/proof}
-
 \input{chapters/userstudy/deploy}
 \input{chapters/userstudy/testing}
 \input{chapters/userstudy/review}
 \input{chapters/userstudy/deployment}
 \input{chapters/userstudy/maintenance}
-
 \input{chapters/userstudy/discussion}
-
 \input{chapters/userstudy/related}
-
 \input{chapters/userstudy/conclusion}
+
+\chapter{Unblocking Automated Verification with Large Language Models}
+
+\input{chapters/laurel/intro}
+\input{chapters/laurel/overview}
+\input{chapters/laurel/placeholder}
+\input{chapters/laurel/algo}
+\input{chapters/laurel/benchmark}
+\input{chapters/laurel/eval}
+\input{chapters/laurel/relatedwork}
+\input{chapters/laurel/conclusion}
 \appendix
 
 % Stuff at the end of the dissertation goes in the back matter

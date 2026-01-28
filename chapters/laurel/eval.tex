@@ -1,0 +1,526 @@
+
+\section{Evaluation}\label{sec:eval}
+
+We design our evaluation to answer three main research questions:
+\begin{enumerate}[label=\bfseries RQ\arabic*).]
+  \item How effective are LLMs with a baseline prompt at generating assertions?
+  \item Do \emph{assertion placeholders} help LLMs generate Dafny assertions?
+  \item Does selecting in-context examples via \emph{proof similarity} help LLMs generate Dafny assertions?
+We also compare our \emph{proof similarity} metric with two state-of-the-art similarity metrics: \emph{neural embedding} and \emph{TF-IDF}.
+\end{enumerate}
+
+\subsection{Experimental setup}\label{sec:eval:setup}
+
+To answer these research questions,
+we run different variants of \tool, corresponding to different prompting techniques,
+on the \ntasks assertion synthesis tasks from \dataset.
+%
+For each task, we give the LLM \maxattempts tries to generate an assertion,
+and we consider the task solved in $k \leq \maxattempts$ attempts
+if any of the first $k$ generated assertions causes the lemma to verify.
+%
+We then compare the variants based on the number of tasks solved for each $k$.
+%
+We do not compare \tool with other tools,
+since to the best of our knowledge, there are no existing tools that target assertion generation.
+
+We run all of our experiments on a server with a 2.83GHz Quad-Core Intel(R) Xeon(R) CPU X3363,
+16 Gib of RAM and running Ubuntu 20.04.
+%
+We use Dafny 4.3.0 as the verifier and GPT-4o~\cite{GPT4o} as the LLM.
+%
+When prompting the LLM, we use standard best practices,
+such as providing a system prompt,
+as shown in \autoref{fig:prompt} (see appendix \autoref{appendix:prompt} for a full prompt example).
+%
+We set the temperature to $1.0$ to increase the variety of generations.
+
+\begin{figure}
+\begin{tcolorbox}[title={Prompt}]
+\textbf{System instructions:}\\
+You are a Dafny formal method expert.
+You will be provided with a Dafny lemma that does not verify.
+Your task is to insert an assertion in the <assertion> placeholder to make it verify.
+
+\begin{tcolorbox}[title={In-context example extracted using \emph{proof similarity}}]
+\medskip
+\textbf{User: Example Task}\\
+Can you fix this proof by inserting one assertion in the <assertion> placeholder?
+\begin{verbatim}
+lemma LemmaCardinalityOfSet<T>(xs: seq<T>) {
+  ...
+}
+\end{verbatim}
+\medskip
+\textbf{AI Assistant: Example Solution}
+\begin{verbatim}
+  assert wrapNSegs(s)+[DC] == wrapNSegs([s[0]]) +
+(wrapNSegs(s[1..]) + [DC]);
+\end{verbatim}
+\end{tcolorbox}
+
+\begin{tcolorbox}[title={Lemma to fix with \emph{Placeholder}}]
+\medskip
+\textbf{User:}\\
+Can you fix this proof by inserting one assertion in the <assertion> placeholder?
+\begin{verbatim}
+
+lemma ParseDigitsAndDot()
+  ...
+{
+  if ... {
+  } else {
+    <assertion> Insert assertion here </assertion>
+    ParseDigitsAndDot();
+  }
+}
+\end{verbatim}
+\end{tcolorbox}
+
+\end{tcolorbox}
+\caption{Example of prompt after integrating the results from \placeholder and \emph{Proof similarity}.}
+\label{fig:prompt}
+\end{figure}
+\subsection{RQ1: Effectiveness of Baseline LLM Prompts}\label{sec:eval:rq0}
+
+\begin{figure}
+\centering
+\includegraphics[width=1\linewidth]{chapters/laurel/fig/whole_placeholder.pdf}
+\caption{Percentage of verified lemmas vs inference cost for the entire \dataset dataset, and by codebase, using placeholder.}
+\label{fig:rq1_total}
+\end{figure}
+
+In this experiment, we assess the baseline effectiveness of the LLM in generating assertions;
+namely, we evaluate the following three prompting strategies:
+\begin{itemize}
+  \item \baseline: the LLM is given only the code of the target lemma.
+  \item \errmsg: the LLM is given the code and the initial error message produced by Dafny.
+  \item \iterative: same as baseline \baseline,
+  but if the lemma still does not verify with the generated assertion,
+  we prompt the LLM again with the resulting error message.
+\end{itemize}
+
+\autoref{fig:rq1_total} presents the success rate of these three variants
+(along with other variants, discussed in \autoref{sec:eval:rq1})
+on the entire \dataset dataset
+and also with the results divided by codebase.
+%
+Specifically, the x-axis shows the number of attempts $k = [1..10]$
+and the y-axis shows the percentage of lemmas verified in $\leq k$ attempts.
+
+As you can see in \autoref{fig:rq1_total},
+\baseline performs quite poorly across the board,
+achieving a success rate of 6.2\% even at $k=10$.
+%
+The LLM performs best on Libraries with 8.6\%,
+and worst on \cedar with only 3.7\% of tasks solved.
+%
+The difference is consistent with the complexity of the codebases:
+the lemmas in Libraries mainly deal with standard data structures and mathematical concepts,
+while those in \cedar are domain-specific
+and contain user-defined types and functions.
+
+Manual analysis shows that the poor performance of \baseline
+is due to the inability of the LLM to identify and localize the issue in the lemma.
+%
+As we illustrated in \autoref{sec:overview},
+the LLM may attempt to add an assertion at an unrelated location,
+or even try to modify a pre- or a post-condition.
+%
+Note that the LLM's confusion about the location of the assertion has a complex effect:
+even a correct assertion inserted at a wrong location can lead to a verification failure,
+but also the assertion itself is more likely to be incorrect,
+because the surrounding context is different.
+
+Including the raw Dafny error message in the prompt more than doubles the LLM's overall success rate,
+but in absolute terms it remains low, at around 15\%:
+the LLM seems to have difficulties linking the error message with the correct line in the lemma.
+
+To confirm our hypothesis that the LLM struggles with assertion placement,
+we measured the distance between the LLM's chosen assertion location and the ground truth location in the original codebase;%
+\footnote{Although the ground truth location is not the only correct location for an assertion,
+larger distances are indicative of the LLM's inability to localize the issue.}
+the results are depicted in \autoref{fig:lines_distance}.
+%
+As suspected, \baseline struggles to find the correct location,
+with a median distance of 2.8 lines, a third quartile of 5.85 lines, and many outliers over 13 lines away.
+%
+Adding the error message does improve the placement, but many assertions are still placed far from the ground truth.
+
+Iterative prompting increases the success rate substantially to 29.6\% on the entire dataset.
+%
+As indicated by previous work~\cite{AutomatedProgramRepairXia2024Issta},
+this suggests that the LLM has the ability to learn from its mistakes
+when provided with feedback on incorrectly generated assertions.
+%
+Note, however, that iterative prompting effectively doubles the number of attempts the LLM gets to generate an assertion,
+so the comparison is not entirely fair.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=.6\linewidth]{chapters/laurel/fig/AssertionLocationBaselineVersusError.pdf}
+  \caption{Distance to the LLM's chosen assertion location from the ground truth assertion on the entire \dataset dataset.}
+  \label{fig:lines_distance}
+\end{figure}
+
+\subsection{RQ2: The Effect of Assertion Placeholders}\label{sec:eval:rq1}
+
+For this experiment, we compare the baseline prompting strategies
+from the previous section with the following two variants of \tool:
+\begin{itemize}
+  \item \placeholder: the LLM is given the code with an assertion placeholder.
+  \item \placeholderr: the LLM is given the code with an assertion placeholder and the error message.
+\end{itemize}
+%
+\autoref{fig:rq1_total} shows the success rate of these variants on the \dataset dataset,
+and the results by codebase.
+
+As you can see, \placeholder significantly improves the success rate over the baselines,
+up to 34.4\% on the entire dataset for $k=10$.
+%
+Additionally, more than half of these assertions are generated on the first try.
+%
+We attribute this improvement to the fact that LLMs
+are better at code in-filling than at error localization,
+as reported by previous work on program repair~\cite{ProgramRepairXia2023}.
+
+As for individual codebases,
+once again \cedar has the lowest success rate with 16.6\%,
+while Libraries and \vmc rise above 40\%.
+%
+This is consistent with our earlier observation that \cedar assertions are complex,
+and are harder for the LLM to generate, even when the location is known.
+
+Adding the error message to the placeholder does not enhance the overall success rate, which drops to 26.2\%.
+%
+Comparing across codebases, however, we can see that adding the error message is detrimental for Libraries,
+while it does not impact the overall success rate for \cedar and \vmc.
+%
+Our intuition is that the error message can sometimes guide the LLM in identifying the problem to be addressed,
+but it can also mislead it or inhibit the generation of diverse outputs.
+%
+This effect is visible even in \vmc and \cedar, where, although the error messages are helpful overall,
+\placeholderr takes more tries to reach the maximum success rate,
+because error messages tend to get the LLM stuck on reproducing the failing specification in the assertion.
+
+\subsection{RQ3: The Effect of Proof Similarity}\label{sec:eval:rq2}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=1\linewidth]{chapters/laurel/fig/whole_benchs_similarity.pdf}
+  \caption{Percentage of verified lemmas vs inference cost for the entire \dataset dataset, and by codebase, using similarity.}
+  \label{fig:rq2_total}
+\end{figure}
+
+In this experiment, we evaluate the effectiveness of selecting in-context examples
+based on proof similarity,
+by comparing the following variants of \tool:
+\begin{itemize}
+  \item \placeholder: the top-performing variant from RQ2.
+  \item \random: the LLM is given the code with a placeholder and $m$ examples from the same codebase, selected at random.
+  \item \similarity: the LLM is given the code with a placeholder and $m$ examples from the same codebase, selected based on proof similarity.
+  \item \similaritynoplaceholder: the LLM is given the code without placeholder and $m$ examples from the same codebase, selected based on proof similarity.
+\end{itemize}
+%
+We use $m=6$ in all experiments.
+%
+For both \random and \similarity,
+we consider all assertions from the codebase except for the current target assertion as candidates for in-context examples
+(see \autoref{sec:eval:threats} for a discussion of this choice).
+
+\autoref{fig:rq2_total} shows the success rate of these variants on the entire \dataset dataset,
+and also splits the results by codebase.
+%
+In~\autoref{fig:rq2_total},
+\similarity is the most successful variant with up to 56.6\% of lemmas verified overall,
+compared to 51.7\% for \random, 46.8\% for \similaritynoplaceholder and 34.4\% for \placeholder.
+%
+Moreover, \similarity and \random dominate already for small values of $k$,
+with around 40\% of lemmas solved on the first attempt.
+%
+These results confirm our two hypotheses:
+\begin{enumerate*}
+  \item that providing example assertions from the same codebase is beneficial (since \random outperforms \placeholder), and
+  \item that providing example assertions from similar proof contexts is even more beneficial (since \similarity outperforms \random).
+\end{enumerate*}
+%
+Moreover, we see that the benefits from the placeholder and the in-context examples are complementary,
+since \similaritynoplaceholder does not perform as well as the two variants that combine the two techniques.
+
+When examining the codebases individually,
+we observe that \similarity consistently achieves the highest success rate across all codebases,
+although for \vmc, \random performs equally well.
+%
+\cedar, with its complex assertions,
+benefits the most from the in-context examples,
+with at least 30\% between \placeholder and any variant with examples.
+%
+This shows that in-context examples are crucial for domain-specific lemmas with user-defined types and functions.
+%
+\paragraph{Comparison with other similarity metrics}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=1\linewidth]{chapters/laurel/fig/similarity_comparison.pdf}
+  \caption{Percentage of verified lemmas vs inference cost for the entire \dataset dataset, and by codebase, using similarity.}
+  \label{fig:rq3_bis}
+\end{figure}
+
+To evaluate the effectiveness of our \emph{proof similarity} metric,
+%
+we also compared it with two state-of-the-art similarity metrics, with the following variants:
+\begin{itemize}
+  \item \random: same as previous experiment, the LLM is given a placeholder and $m$ random examples from the same codebase.
+  It serves as a baseline for the other similarity metrics.
+  \item \similarity: our \emph{proof similarity} with a placeholder and $m$ examples from the same codebase.
+  \item \embedding: the LLM is given the code with a placeholder and $m$ examples from the same codebase, selected based on neural embedding similarity.
+  \item \tfidf: the LLM is given the code with a placeholder and $m$ examples from the same codebase, selected based on TF-IDF similarity.
+\end{itemize}
+
+We kept the same setup as in the previous experiment, with $m=6$,
+%
+and also including all assertions for in-context examples.
+
+\autoref{fig:rq3_bis} shows the success rate of each similarity metric on the entire \dataset dataset,
+%
+along with the per codebase results.
+%
+In \autoref{fig:rq3_bis}, our proof \similarity is the most successful similarity metric
+%
+with 56.6\% of lemmas verified overall, compared to 55\% for \embedding, 53.6\% for \tfidf, and 51.7\% for \random.
+%
+Across the 3 codebases \similarity is the most consistent performer,
+%
+scoring 1st in \libraries, and 2nd in \cedar and tied in \vmc.
+%
+Contrastingly, \tfidf is the least consistent performer,
+%
+even underperforming \random in \cedar.
+%
+All of this suggests that while the difference between the similarity metrics is small,
+%
+the \emph{proof similarity} metric
+%
+performs at least as well as the state-of-the-art similarity metrics,
+%
+while remaining simple.
+%
+It can serve as a substitute to \embedding and \tfidf for this kind of task,
+%
+as it better captures the structure of the code.
+
+
+
+
+
+
+
+
+
+\subsection{Failure Analysis}\label{sec:eval:failure}
+
+To get an insight into the limitations of our techniques,
+we manually analyzed a sample of tasks that could not be solved by the best configuration of \tool.
+%
+We found two sources of failure to be most prevalent,
+which we describe below.
+
+
+
+\paragraph{Function Missing from Context}
+
+Sometimes an assertion needs to call a function defined elsewhere in the codebase.
+%
+Consider the lemma \T{SoundArith},
+which states the soundness of binary arithmetic operations in the \cedar language:
+%
+\begin{dafny}
+lemma SoundArith(op: BinaryOp, e1: Expr, e2: Expr, t: Type, effs: Effects)
+  requires ...
+  ensures ...
+{
+  assert TC.inferArith2(op,e1,e2,effs) == types.Ok(Type.Int);
+  ...
+}
+\end{dafny}
+%
+The assertion in Line~4 calls the function \inlinedafny{inferArith2},
+which is not mentioned anywhere else in this lemma.
+%
+Hence, if we remove this assertion and ask the LLM to synthesize it,
+the LLM has no way of knowing that this function exists.
+%
+To remedy this issue,
+our example selection technique is able to find similar assertions to guide the LLM, such as:
+\[
+  \mbox{\T{assert TC.inferContainsAnyAll(op,e1,e2,effs) == types.Ok(t')}}
+\]
+Given this example, the LLM actually picks up on the naming scheme for a family of related functions in this codebase,
+and proposes the following assertion:
+\[
+  \mbox{\T{assert TC.inferArith(op,e1,e2,effs) == types.Ok(Type.Int)}}
+\]
+This assertion is just \emph{one character away} from the correct solution!
+%
+The function \T{inferArith} does not exist in the code;
+instead, the code has two different functions---%
+\inlinedafny{inferArith1} for unary operators and \inlinedafny{inferArith2} for binary operators.
+
+To address this problem in the future,
+we might either augment our prompts with a list of likely relevant functions from the codebase,
+or attempt to repair synthesized assertions that call non-existent functions,
+by looking for functions with similar names.
+
+
+\paragraph{Function Overused in Context}
+
+The opposite problem can also occur:
+when a function is mentioned in the target lemma \emph{too many times},
+the LLM might get fixated on it
+and insist on using it in the assertion.
+%
+Consider the following lemma from Libraries:
+\begin{dafny}
+lemma LemmaFlattenConcat<T>(xs: seq<seq<T>>, ys: seq<seq<T>>)
+  ensures Flatten(xs + ys) == Flatten(xs) + Flatten(ys)
+  {
+    if |xs| == 0 {
+      assert xs + ys == ys;
+    } else {
+      ... // Flatten called another 6 times
+    }
+  }
+\end{dafny}
+%
+Here \T{xs} and \T{ys} are nested sequences,
+and \T{Flatten} is a helper function that flattens a nested sequence.
+%
+Importantly, this function is used a whopping \emph{nine times} in the lemma!
+%
+This is a problem when we ask the LLM to generate the assertion on Line~4,
+as the LLM thinks that \T{Flatten} is important in this lemma,
+and refuses to generate any assertions without it.
+
+\subsection{Threats to Validity}\label{sec:eval:threats}
+
+\paragraph{Internal}
+%
+The main threat to internal validity is the randomness in our experiments,
+which stems from both the LLM inference and the selection of in-context examples with the \random strategy;
+hence the success rates reported in \autoref{fig:rq1_total} and \autoref{fig:rq2_total} can be noisy.
+%
+Normally, such experiments need to be run multiple times,
+but due to the high costs of LLM inference,
+this has not been common practice in related
+literature~\cite{DafnyFSE24,BaldurFSE23First}.
+%
+The reason why these results are not as noisy
+as one might expect is that the success rate
+is aggregated over the tasks in the dataset,
+and also over the number of attempts:
+the plots show whether \tool succeeded at
+least once in $k$ attempts, so for higher
+$k$, this measurement is more stable.
+
+Another potential concern is \emph{data leakage},
+\ie whether GPT-4o has been trained on the code
+that we are evaluating it on.
+%
+Although data leakage is possible, based on the GPT-4o's knowledge cut-off date of October 2023,
+we believe that it is unlikely to have a significant impact on our results,
+based on the poor performance of the \baseline variant.
+
+\paragraph{External}
+%
+The main threat to external validity is that
+\tool only tries to insert one assertion
+at a time, whereas in reality multiple
+assertions might be needed to fix a lemma.
+%
+The single-assertion setting is representative of the scenario of fixing
+brittle proofs, but might be less representative
+of the scenario of writing new lemmas from scratch.
+%
+We believe that \tool can be extended to the
+multi-assertion setting as follows:
+%
+\begin{enumerate}
+  \item If multiple assertions are needed to fix \emph{different} verification errors,
+    \tool can run independently on each error.
+  \item If multiple assertions are required to fix \emph{the same} verification error,
+    we can try verifying different subsets of assertions obtained from the $k$ attempts.
+\end{enumerate}
+%
+The evaluation of these extensions is left for future work.
+%
+One potential issue is that the LLM sometimes uses existing
+assertions from the same lemma as hints for the missing assertion,
+and this might make generating multiple assertions from
+scratch harder than adding a single assertion.
+
+A related but slightly different threat
+is that \tool relies on existing assertions
+in the codebase to provide in-context examples.
+%
+This is only possible in a mature codebase
+with many assertions, hence our example selection
+technique might not work as well in the early stages
+of a project (while the placeholder technique is independent
+of the codebase maturity).
+%
+To study this further, we experimented with a sample of the benchmark (n=13),
+where we increased the number of existing assertions in the codebase from 25\% to 100\%.
+%
+\tool's performance improves \emph{gradually}
+as the number of the existing assertions increases
+(see appendix \autoref{appendix:number_examples} for the results).
+
+\tool focuses only on two prompting techniques-- \placeholder and \similarity--
+as they were the most effective in our early experiments.
+%
+During development, we explored several alternative techniques, such as:
+\begin{itemize}
+  \item Including the complete source file from which the target lemma was extracted, which
+provided excessive content that often confused the model
+  \item Providing counterexamples using the Dafny option \texttt{--extract-counterexample},
+but the LLM seemed to struggle to use them effectively.
+  \item Attempting multiple retries for incorrect assertions within the same prompt,
+which mainly helped in case of syntax errors.
+\end{itemize}
+%
+We extended our investigation to more sophisticated prompting strategies,
+including Chain of Thought~\cite{cot},
+that breaks down
+the task into a sequence of smaller and more manageable tasks (appendix \autoref{appendix:cot_prompt}).
+%
+Additionally, we tested an enhanced prompt incorporating
+additional explanations on the nature and placement of assertions (appendix \autoref{appendix:enhanced_prompt}).
+%
+Ultimately, none of these techniques
+provided significant improvements over \similarity and \placeholder.
+%
+This led us to focus \tool on these two techniques,
+optimizing for both effectiveness and simplicity.
+
+We evaluate using only one model (GPT-4o);
+we chose this model because it is the most
+recent and powerful LLM available at the
+time of writing, and anecdotally we found
+that smaller models like GPT-3.5 did not
+perform as well on assertion generation,
+while GPT-4 performed very similarly to GPT-4o.
+%
+However, the usefulness of \tool's prompting
+technique might be diminished in the future,
+as different and more powerful models are
+developed.
+
+Finally, we only evaluate \tool on three
+Dafny codebases; we believe them to be
+representative of the kind of codebases
+that Dafny is used for, because they are
+real-world projects and also quite diverse.
+%
+However, the effectiveness of \tool
+might vary on other codebases.
+

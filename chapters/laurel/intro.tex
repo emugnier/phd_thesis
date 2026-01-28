@@ -1,0 +1,218 @@
+\section{Introduction}\label{sec:intro}
+
+Auto-active verifiers like Dafny \cite{Leino2010Dafny},
+$F^*$~\cite{fstar} and Verus~\cite{verus} significantly
+automate the verification process, outsourcing low-level
+details of proofs to an SMT solver~\cite{z3}.
+%
+Indeed, after decades of research, these verifiers
+are getting adopted in industry, where they have been
+used to build verified cryptographic
+libraries~\cite{FHE2023Yang,AWSEncryptionSDK,evercrypt},
+authorization protocols~\cite{Cedar},
+a random number generator~\cite{dafnyVMC},
+the Ethereum virtual machine~\cite{Ethereum2023Cassez},
+packet parsers~\cite{everparse-fstar} and other critical
+infrastructure.
+
+\paragraph{The Problem: Assertion Hints}
+%
+Unfortunately, the reliance on SMT solvers is a double-edged sword,
+as the automation provided by the solver is limited.
+In practice, proof engineers often need to add hints
+in the form of inline \emph{assertions} to their code
+which introduce intermediate facts that break down the
+proof obligation so that it can be readily digested
+by the SMT solver.
+%
+For example, consider the following lemma
+from the Dafny standard library~\cite{LibrariesDafny}:
+%
+\begin{dafny}
+lemma LemmaCardinalityOfSet<T>(xs: seq<T>)
+  ensures |ToSet(xs)| <= |xs|
+{
+  if |xs| == 0 {
+  } else {
+    assert ToSet(xs) == ToSet(DropLast(xs)) + {Last(xs)};
+    LemmaCardinalityOfSet(DropLast(xs));
+  }
+}
+\end{dafny}
+%
+The \emph{post-condition} of the lemma (\T{ensures})
+states that the cardinality of a set generated from
+a sequence \T{xs} is at most the length of \T{xs};
+the body of the lemma constitutes its \emph{proof}.
+%
+The base case of the proof is discharged automatically,
+while the case of a non-empty sequence makes
+a recursive call in order to invoke the
+induction hypothesis.
+%
+However, even with the induction hypothesis in scope
+---- obtained by the post-condition or \emph{ensures}
+clause of the recursive call --- the reasoning required
+to prove the recursive case is too complex for the solver
+to handle automatically.
+%
+Instead, the proof engineer must explicitly provide
+a hint via the \emph{assertion} on Line 5 that explains
+how to decompose the elements of a sequence if we split
+off its last element, after which the solver can check
+the proof.
+
+\paragraph{Assertions are Difficult and Ubiquitous}
+%
+A significant amount of time in proof engineering is spent
+on the tedious and time-consuming task of debugging failing
+proofs --- including both where the verifier rejects the proof,
+or where the verifier times out --- to divine the right assertion
+hints that will guide the solver to the correct proof.
+%
+The SMT solver is a black box, making it hard to determine what
+exact information is missing and needed to complete the proof,
+or what extraneous information is making the solver timeout.
+%
+Indeed, a recent report on industrial verification for
+cryptography~\cite{FormallyVerifyingIndustryCryptographyDodds}
+reports that ``most proof engineering time is spent working with
+a failing proof'' as opposed to, say, writing top-level function
+specifications.
+%
+While other kinds of hints can also be used to debug
+a failing proof~\cite{IroncladChris,VerificationOptimization},
+we find that inline assertions are by far the most common,
+and are ubiquitous in industrial proof efforts.
+%
+For example, assertions are the very first tactic listed
+in the official Dafny proof optimization guide~\cite{VerificationOptimization}.
+%
+Moreover, we show~\autoref{sec:benchmark},
+that in large industrial Dafny codebases
+assertions comprise 4-11\% of the lines
+of code, greatly exceeding other types
+of hints from the guide
+(see \autoref{sec:benchmark} for details).
+
+% --------------------------------------------------------------------------------------------
+
+In this paper, we present \tool: a tool that
+helps proof engineers with the tedious task
+debugging failing proofs by using Large Language
+Models (LLMs) to automatically generate the assertions
+needed to verify industrial Dafny code.
+We develop \tool via the following concrete contributions.
+
+\paragraph{1. Dataset Curation}
+%
+Our first contribution is \dataset, an open-source
+dataset of Dafny lemmas extracted from three real-world
+codebases: the Dafny standard library~\cite{LibrariesDafny},
+an authorization library \cedar~\cite{Cedar}, and a library
+of Monte-Carlo algorithms \vmc~\cite{dafnyVMC}.
+%
+Our analysis of \dataset shows that the code
+in industrial proof developments are substantially larger
+and more complex than the individual ``textbook'' procedures
+considered by prior work applying LLMs to generate entire
+proofs (\ie function bodies) from specifications (\ie function contracts)
+~\cite{DafnyFSE24,sun2024clover,brandfonbrener2024VerMCTS,chakraborty2024neuralsynthesissmtassistedprooforiented,yang2024autoverus}.
+%
+In contrast, the proofs in our dataset make heavy use
+of user-defined types, functions, and auxiliary lemmas
+scattered throughout the codebase; all of which are
+features that are out of scope for current whole-proof
+generation approaches.
+%
+Thus, while the above work might seem to subsume the problem
+of assertion synthesis, in fact as they were designed for and
+evaluated on short, standalone programs, which are not
+representative of industrial verification efforts, they
+do not apply to the industrial code bases that we focus on.
+%
+As a concrete example, while much of the previous
+work has targeted the automatic generation of loop
+invariants (including using LLMs~\cite{kamath2023Invariant,loughridge2024dafnybench}),
+our analysis reveals that there are in fact
+\emph{vanishingly few} loop invariants in
+the industrial codebases we analyzed---under 0.5\% of LOC ---
+as large verification efforts mostly
+contain lemmas and not executable code,
+and lemmas rarely involve loops.
+%
+Consequently, \dataset shows that for large-scale verification
+efforts, it is important to focus on the more specialized
+problem of debugging an existing proof by generating proof hints.
+%
+Sadly, we found that with a na\"ive prompting strategy,
+LLMs struggle to generate correct assertions for real-world
+Dafny code.
+
+\paragraph{2. Prompt Specialization}
+%
+Our second contribution is to improve the success rate of LLMs via two
+key observations that we use to specialize prompts with
+the necessary context.
+%
+First, we observe that LLMs often fail
+to determine even the correct \emph{location} where
+the assertion should be inserted.
+%
+Thus, our first prompt specialization technique
+is a static analysis that uses the Dafny error
+message to systematically infer the assertion
+location, after which we can prompt the
+LLM with an assertion placeholder for
+that specific location.
+%
+Second, we observe that in most practical code evolution
+scenarios, \eg when repairing proofs that have been ``broken''
+by changes to the solver, or extending a mature codebase,
+the codebase \emph{already contains} other assertions
+similar to the one we are trying to generate.
+%
+Hence, we can use these existing assertions
+as \emph{in-context examples}~\cite{fewshot} when
+prompting the LLM.
+%
+The challenge, however, is that a codebase
+may contain hundreds of assertions,
+and giving them all to the LLM would
+be detrimental to its performance.
+%
+We solve this problem with a novel, lightweight
+language-agnostic \emph{hierarchical edit distance} metric
+that captures the structural similarity of proofs.
+%
+We use this metric to design a heuristic that selects a small
+set of assertions from lemmas that are structurally
+similar to and hence, relevant to the target lemma, and
+which can then be used to further specialize the LLM prompt
+to more accurately generate the missing assertion.
+
+\paragraph{3. Evaluation}
+%
+Our final contribution is an implementation of our approach
+in \tool, a system that generates assertions for Dafny code
+bases, and a comprehensive evaluation of \tool on the \dataset.
+%
+(Although \tool focuses on Dafny, the underlying
+methods should readily transfer to other SMT-based
+verifiers~\cite{key-book,whyml,fstar,LH,verus,creusot,prusti,flux}
+that also rely on assertions to guide the solver.)
+%
+Our evaluation shows that, by specializing
+the prompt locations, assertion placeholders
+improve the success rate of LLMs by at least
+a factor of 6 given ten attempts, compared
+to a baseline prompting technique.
+%
+Further, the addition of in-context examples
+selected via our proof similarity metric
+improves the success rate
+by up to 30\%.
+%
+Overall, \tool correctly generates 82/145 (56.6\%)
+of the assertions in our dataset, showing that our
+approach is viable for unblocking automated verification.

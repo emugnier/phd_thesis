@@ -1,0 +1,192 @@
+\section{Related Work} \label{sec:related}
+
+Several lines of research have looked into using machine learning in general
+and LLMs in particular, to help with program verification.
+
+\paragraph{Invariant Generation}
+%
+Static verifiers require explicit \emph{loop invariants}
+to help summarize the effects of potentially unbounded number of iterations~\cite{Floyd67}.
+%
+There is rich literature~\cite{neural_inv_2021,pei2023,kamath2023Invariant,chakraborty2024invariantranking}
+investigating the use of neural networks and LLMs to generate candidate loop invariants
+and proposing symbolic algorithms to validate and rank them.
+%
+The reason we chose to focus on assertions instead of loop invariants in our work is practical:
+we are motivated by a set of industrial verification developments,
+which contain many assertions but relatively few loops.
+%
+Moreover, the symbolic algorithms used in loop invariant generation~\cite{ultimate}
+are unlikely to be applicable to our dataset,
+since our assertions involve reasoning about user-defined functions.
+
+\paragraph{LLMs for Interactive Proofs}
+%
+LLMs have also been applied to generate or repair proofs
+in verification languages that do not rely on SMT solvers,
+such as Coq~\cite{yang2019learningprovetheoremsinteractingCoqGym,BaldurFSE23First} and Lean~\cite{leandojo,wang2023legoprover}.
+%
+The style of these ``extrinsic'' interactive
+proofs, which typically comprise repetitive
+application of a fixed number of proof tactics, is
+very different from the ``intrinsic'' proofs
+that are carried out with Dafny, which instead
+requires the user to spell out non-trivial,
+highly program--specific hints via assertions.
+%
+We refer the reader to a recent
+survey~\cite{li2024surveydeeplearningtheorem}
+that gives an overview of the many methods used
+to exploit the ``interactive'' nature of such
+proving with language models.
+
+
+\paragraph{LLMs for Program Repair}
+%
+LLMs have also proven successful in repairing
+program code~\cite{codex,khatry2023words,ProgramRepairXia2023}
+demonstrating that that LLMs are more performant for single-line
+code generation.
+%
+This is similar to our assertion placeholder
+that constrain the LLM generation to get better
+results.
+%
+However, in this case, the LLM can benefit from
+the vast corpus of existing Java/Python code,
+while we show that LLM-based repair can also
+be applied to relatively niche verification
+languages.
+
+\paragraph{LLMs for Program Proof Synthesis}
+%
+Several groups have looked into using LLMs to \emph{synthesize}
+proofs for program verification.
+%
+At a high-level, the goal here is to start with a formal specification
+or contract for a particular function is supposed to do, and to then
+prompt the LLM to generate the code for that function.
+%
+\citet{DafnyFSE24} and \citet{sun2024clover}
+have applied LLMs to synthesize verified Dafny code
+for a subset of MBPP~\cite{mbpp} benchmarks
+and for textbook problems, respectively.
+%
+More recently, \cite{brandfonbrener2024VerMCTS}
+present an algorithm to synthesize verified Dafny
+code from specifications of about twenty tricky examples,
+but where the code is repeatedly incrementally generated
+and checked to constrain the ``decoding'' of the program,
+thereby reducing the number of tokens needed to generate
+verified code.
+%
+\fstar is another verification language that is like Dafny,
+but has various other specification mechanisms including
+dependent types.
+%
+\citet{chakraborty2024neuralsynthesissmtassistedprooforiented}
+describe a benchmark of nearly 600K lines of open-source \fstar code,
+including nearly 32K top-level \fstar contracts, and show the LLMs,
+with fine-tuning can generate verified code for between 35-41\%
+of the contracts.
+%
+Finally, \cite{yang2024autoverus} the authors describe AutoVerus,
+a system that does the above but for a Floyd-Hoare (i.e. Dafny style)
+verifier for Rust programs. Crucially, AutoVerus constructs proof-programs
+via multiple LLM (agents) that individually generate the overall proof structure,
+then refine it using a set of known heuristics, and then debug and repair it guided
+by the verifier's error messages. Together, AutoVerus reports a very high (near 90\%)
+success rate on set of 150 function contracts.
+%
+All the above show that LLMs can greatly automate the development
+of short and self-contained functions, where additionally, natural
+language descriptions or formal specifications of the function's contract
+are available. However, such full automation is not feasible for
+the large-scale verification developments we consider.
+
+\paragraph{LLMs for Program Proof Repair}
+%
+For this reason, we choose to focus on the part
+of the verification process that is most frustrating
+for the user, yet amenable to automation: the generation
+of assertions.
+%
+\tool is closely related to concurrently done work
+described in \cite{loughridge2024dafnybench}
+which curates a large dataset of Dafny programs from GitHub,
+and then evaluates the effectiveness of LLMs in generating
+\emph{hints} namely assertions and loop invariants needed
+to verify the functions in the dataset.
+%
+The paper shows different LLMs can successfully repair nearly
+60\% of procedures, but the majority of these are small standalone
+functions where 26\% require no hints (invariants or assertions) at all.
+%
+In contrast, we focus on large industrial developments,
+where, as we show, in context example selection is crucial
+for the success of the LLMs.
+%
+The only work we are aware of that applies LLMs to real-world Dafny code
+is the preliminary report~\cite{LLMDafny} that addresses a complementary problem to ours:
+generating helper \emph{lemmas}.
+
+
+\paragraph{In-context Example Selection}
+%
+Selecting relevant in-context examples for a given
+task is an area of active research \cite{liu-etal-2022-makes,su2023selective,lu-etal-2022-fantastically,sorensen-etal-2022-information}.
+~\cite{liu-etal-2022-makes,su2023selective} propose $kNN$ methods based on the cosine similarity of the neural embeddings of the examples,
+while others take information-theoretic insights for prompt optimization,
+like entropy \cite{lu-etal-2022-fantastically} and mutual information \cite{sorensen-etal-2022-information} estimation,
+again making use of neural embeddings or logprobs.
+%
+\tool has an advantage with respect to these since our purely symbolic method is less computationally taxing.
+%
+\citet{barke-etal-2024-solving},
+use clustering based on regular expressions
+to select diverse examples, but their technique
+is specific to spreadsheet programming.
+
+There have also been a series of recent work concerned with example selection specifically for code generation.
+\cite{mikula2023magnushammer} develops in the related area of automated theorem proving.
+They use a Transformer-based, two-stage algorithm for selecting then reranking candidate premises that will be
+useful in proving a goal.
+\cite{leandojo} also implements a premise retrieval mechanism based on cosine similarity between embeddings of the query state and
+a given candidate premise.
+Both of these methods outperform the standard benchmark methods, but requires training, or fine-tuning, both embedding models.
+Additionally, in these settings, the required similarity is not code-to-code, rather premise-to-proof state, so they cannot rely
+on the structural similarity.
+
+\paragraph{Code similarity}
+Code similarity is a long-standing problem that has been tackled from different angles, from detecting code plagiarism,
+identify code reuse and enabling code recommendation.
+The methods proposed in this area can be categorized by the structure of the program they use to determine similarity.
+We refer to \cite{zakerinasrabadi2023similarity} for an updated and comprehensive review on code similarity research.
+
+Text-based techniques \cite{nicad,Chen2015DetectingAM,tukaram2019codeclone} treat source code simply as a text document.
+While this enables comparison in a mostly language-agnostic way and reasonable effectiveness,
+they are easily outperformed by methods that leverage the discrete structure of programs.
+
+Learning-based methods \cite{mikula2023magnushammer,leandojo,Chochlov2022bertclone,alon2019code2vec}, such as embedding similarity, have gained prominence with the advent of Large Language Models.
+Although they have shown to work on-par with the best symbolic methods, they still present a barrier to entry,
+requiring expensive preprocessing and training pipelines to work effectively.
+
+Token-based methods \cite{Prechelt2000JPlagFP,duric2013similarity,Ullah2018PlagiarismDI,Ragkhitwetsagul2019SiameseSA}, in contrast, go a step further and treat source code as a sequence of lexer tokens,
+rather than individual character.
+%
+This makes them more robust to code-relevant changes such as variable or string
+literal variations, while still maintaining a decent processing time, since tokenization is usually a linear time
+operation.
+
+Tree-based techniques \cite{Yu2022ASTENSBWASP,jiang2007codeclones,Tekchandani2013codeclone} consider some representation of the syntax trees of programs by using a parser, and
+usually involve tree matching or tree edit distance computation.
+This allows them to handle additional code-relevant modification, like block-reordering, at the expense of time-consuming
+parsing and processing for large codebases and feature-rich programming languages.
+Unsurprisingly, they achieve the best performance among the symbolic methods discussed.
+However, their high implementation cost has limited adoption to only the most widely used programming languages,
+such as C/C++ and Java.
+
+Our Hierarchical Sequence Similarity algorithm can be seen as an intermediate between token- and tree-based similarity
+algorithms, with much of the benefits of both categories.
+
+

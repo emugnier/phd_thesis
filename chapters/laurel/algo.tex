@@ -1,0 +1,199 @@
+\section{Selecting Examples from Similar Proofs}\label{sec:lemma_similarity}
+
+\tool selects relevant in-context examples to prompt the LLM.
+%
+The inputs to this task are
+\begin{enumerate*}[label=(\arabic*)]
+    \item a target \emph{proof context} $C^*$, where a proof context is a lemma with a single placeholder for the missing assertion, and
+    \item a collection of \emph{demonstration examples} $\mathcal{E} = \{(C_i, a_i)\}_{i}$,
+    where each $C_i$ is a proof context, and $a_i$ is its target assertion (\ie the assertion that repairs the proof).
+\end{enumerate*}
+%
+Our goal is to select $m$ examples from $\mathcal{E}$ that are the most helpful to repair $C^*$.
+
+Notably, the most useful demonstration examples are commonly those that contain syntactically similar assertions
+to the target assertion. Crucially, it is often the case that \emph{similar assertions often occur within similar proof contexts}.
+%
+The approach then is to select those demonstration examples $(C_i, a_i)$ where $C_i$ is the most \emph{similar} to $C^*$,
+with the intuition that the assertions $a_i$ will be also be similar to our target assertion $a^*$,
+and therefore help the LLM generate $a^*$.
+%
+The problem then turns into defining an effective similarity notion between proof contexts.
+
+Measuring source code similarity is a problem that arises in many areas of computer science research,
+and as such, extensive literature exists on the topic \cite{zakerinasrabadi2023similarity}.
+Among the most accessible and widely used techniques are TF-IDF and Neural Embedding vector search
+\cite{karpukhin-etal-2020-dense,leandojo,neelakantan2022textcodeembeddingscontrastive,mikula2023magnushammer}, which rely on computing a vector representation of documents---using word frequency statistics and neural networks, respectively---
+for both the query program and a bank of example programs. A relatedness measure, such as cosine similarity, is then used to find the most relevant element given the query.
+However, these embedding-based techniques overlook important aspects of code similarity. Specifically,
+they fail to consider the structure of source code and the ways programmers interact with it,
+and are not robust to code-specific transformations, such as variable renaming.
+
+Given these limitations, one can turn to tree-based similarity metrics,
+which instead determine similarity by comparing the syntax trees of the programs.
+Although these techniques address both limitations mentioned above, they introduce challenges of their own:
+first, creating parse trees for a large codebase can be implementation-heavy and time-consuming.
+Additionally, parsers for mainstream languages are often complex and difficult to adapt to specific use cases,
+such as parsing and comparing incomplete programs.
+Furthermore, matching subtrees is computationally expensive;
+even the simplest tree edit distance algorithms have a time complexity that is worse than quadratic \cite{zhang_shasha_1989}.
+Finally, most state-of-the-art tree-based similarity tools are only implemented
+and ad-hoc optimized for a handful of popular programming languages, making them unsuitable for
+many scenarios, including the one we currently face.
+
+An effective similarity algorithm would ideally achieve the performance of tree-based techniques,
+while retaining the flexibility of text-based comparison methods.
+Here, we propose a similarity algorithm that takes into account the hierarchical structure of code without requiring parsing.
+%
+We leverage the organization of imperative code as a \emph{sequence of lines},
+which can in turn be logically represented as a \emph{sequence of lexer tokens} of the language,
+and ultimately as \emph{sequences of characters}.
+%
+Furthermore, we observe that the design of many programming languages and programming practices show a tendency toward \emph{aligning}
+the different parts of the syntax tree with this natural hierarchy (see \autoref{fig:code_sim_target}, \autoref{fig:code_sim_example}).
+A similarity algorithm that leverages this structure can closely approximate the tree edit distance
+without the need for language-specific parsing, thereby remaining applicable to a wider range of scenarios.
+
+\paragraph{Proof Similarity Metric}
+
+\begin{algorithm}
+    \caption{Sequence similarity}\label{alg:seq-sim}
+    \begin{algorithmic}[1]
+        \Function{SeqSim}{$s_1, s_2, \sigma$}
+        \State $n \gets |s_1|$
+        \State $m \gets |s_2|$
+        \State $dp \gets \text{2DArray}(n+1, m+1, 0)$
+        \For{$i \gets 1 \dots n$}
+            \For{$j \gets 1 \dots m$}
+                \State $dp[i][j] \gets \max\{$
+                \State \qquad $dp[i-1][j],$
+                \State \qquad $dp[i][j-1],$
+                \State \qquad$dp[i-1][j-1] + \sigma(s_1[i], s_2[j])$
+                \State $\}$
+            \EndFor
+        \EndFor
+        \State \Return $\frac{dp[n][m]}{\max\{n, m\}}$
+        \EndFunction
+    \end{algorithmic}
+\end{algorithm}
+
+Our core algorithm computes the similarity score $\seqsim_\sigma(s_1, s_2) \in [0, 1]$
+between two sequences $s_1, s_2 \in \Sigma^*$ over an arbitrary alphabet $\Sigma$. A
+score of $1$ indicates identical sequences, while a score of $0$ indicates no commonality.
+%
+The algorithm identifies an optimal matching between the elements of $s_1$ and $s_2$
+using a Warren-Fischer style~\cite{wagner_fischer-1974-edit} dynamic programming approach;
+the full details are shown in Algorithm \ref{alg:seq-sim}.
+%
+Our approach differs from the standard string edit distance in two key aspects.
+%
+First, the algorithm takes an additional parameter $\sigma\colon \Sigma \to [0,1]$,
+which is a similarity function on the elements of $s_1$ and $s_2$.
+The standard string edit distance is a special case
+where $\sigma(a, b) = 1$ if $a = b$ and $0$ otherwise.
+%
+Second, our algorithm converts the distance $d$ between the strings
+into a similarity score by normalizing it and subtracting from $1$:
+$$
+\seqsim_\sigma(s_1, s_2) = 1 - \frac{d}{\max(|s_1|, |s_2|)}
+$$
+
+A key property of this algorithm is that it can be used \emph{hierarchically}:
+we can measure the similarity over \emph{sequences of sequences},
+by passing $\seqsim$ as the $\sigma$ parameter at the next level.
+%
+For instance, \tool uses this property to define the similarity between proof contexts as
+$\codesim(C_1, C_2) = \seqsim_\linesim(C_1, C_2)$,
+where $C_1, C_2$ are interpreted as sequences of lines,
+and $\linesim$ is the similarity between lines,
+calculated using our algorithm:
+$\linesim(l_1, l_2) = \seqsim_{\tokensim}(l_1, l_2)$.
+%
+Finally, $\tokensim$ is the similarity function between tokens,
+manually defined to treat all identifiers as equal
+but to consider all other tokens as equal only to themselves.
+
+\begin{figure*}[t]
+    \centering
+    \begin{subfigure}[b]{1\textwidth}
+        \begin{Verbatim}[commandchars=\\\{\},fontsize=\footnotesize, frame=lines]
+\grayt{// a1}
+\grayt{\redt{assert s1 +} "." + \redt{s2 =}} \grayt{\redt{[s1[0]] +}} \grayt{\redt{(s1[1..] + }"." + \redt{s2)}}
+
+\grayt{// a2}
+\grayt{\redt{assert} wrapNumSegs(\redt{s}) \redt{+} [\redt{DC}] \redt{=}} \grayt{wrapNumSegs(\redt{[s[0]]}) \redt{+}} \grayt{\redt{(}wrapNumSegs (\redt{s[1..]})\redt{+}[\redt{DC}]\redt{)}}
+        \end{Verbatim}
+        \caption{Line similarity computation}
+        \label{fig:line_sim}
+    \end{subfigure}
+    %
+    \newline
+    \newline
+    %
+    \begin{subfigure}[b]{0.50\textwidth}
+        \begin{Verbatim}[xleftmargin=12pt, numbers=left, numbersep=6pt, commandchars=\~\^\&, codes={\catcode`$=3},fontsize=\footnotesize, frame=lines]
+~violett^lemma ParseDigitsAndDot(s1:string, s2:string)&
+~grayt^requires forall i | 0 <= i < |s1|&
+~grayt^  :: '0' <= s1[i] <= '9'&
+~bluet^ensures ParseDecStr(s1+"."+s2).v.1 == "."+s2&
+~magt^{&
+~purplet^  if |s1| == 1 {&
+~grayt^    assert ParseDecStr("."+s2).None?;&
+~cyant^  } else {&
+~grayt^    ParseDigitsAndDot(s1[1..],s2);&
+~redt^    <assertion_here>&
+~purplet^  }&
+~magt^}&
+        \end{Verbatim}
+        \caption{Target proof context $C^*$}
+        \label{fig:code_sim_target}
+    \end{subfigure}
+    %
+    \hfill
+    %
+    \begin{subfigure}[b]{0.45\textwidth}
+        \begin{Verbatim}[xleftmargin=12pt, numbers=left, numbersep=6pt, commandchars=\~\^\&, codes={\catcode`$=3},fontsize=\footnotesize, frame=lines]
+~violett^lemma CountDCLast(s:seq<numV6>)&
+
+
+~bluet^ensures countDC(wrapNumSegs(s)+[DC]) == 1&
+~magt^{&
+~purplet^  if |s| == 0 {&
+
+~cyant^  } else {&
+
+~redt^    <assertion_here>&
+~purplet^  }&
+~magt^}&
+        \end{Verbatim}
+        \caption{Example proof context $C$}
+        \label{fig:code_sim_example}
+    \end{subfigure}
+    \caption{Similarity metric examples}
+    \label{fig:similarity_examples}
+\end{figure*}
+
+\paragraph{Examples}
+
+Let us first illustrate the line similarity function, \linesim.
+%
+As the two lines, consider the two assertions $a_1, a_2$ from \autoref{sec:overview}, shown in \autoref{fig:line_sim}.
+%
+Tokens matched by \linesim are highlighted in red,
+while unmatched tokens are in gray, indicating they need to be inserted or deleted.
+%
+Because 22 out of 35 of the tokens in the longer second line are matched,
+\linesim will give a high similarity score of $22/35 \approx 0.63$.
+
+Next, consider \codesim,
+with two proof contexts $C^*, C$ in \autoref{fig:code_sim_target} and \autoref{fig:code_sim_example},
+where $C^*$ is the target context from \autoref{sec:overview} and $C$ is an example context from the codebase.
+%
+Lines matched by \codesim share colors,
+while unmatched lines are in gray.
+The algorithm accurately identifies structurally similar lines
+using \linesim as the element similarity inside \codesim.
+%
+Since most of the lines are being matched, the similarity score will be high,
+appropriately leading to selecting $C$---along with its omitted assertion, $a_2$ from \autoref{fig:line_sim}---as an in-context example for $C^*$.
+

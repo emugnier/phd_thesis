@@ -1,0 +1,224 @@
+
+\section{Overview}\label{sec:overview}
+
+
+In this section we illustrate the process of generating assertions in \tool,
+using a simplified lemma from the \cedar codebase~\cite{Cedar} as a motivating example.
+%
+\begin{figure}[ht]
+\begin{dafny}
+lemma ParseDigitsAndDot(s1: string, s2: string)
+  requires forall i | 0 <= i < |s1| :: '0' <= s1[] <= '9'
+  ensures ParseDecStr(s1+"."+s2).value.0 == s1 && ParseDecStr(s1+"."+s2).value.1 == "."+s2
+  {
+    if |s1| == 0 {
+    } else {
+      ParseDigitsAndDot(s1[1..],s2);
+    }
+  }
+\end{dafny}
+\begin{dafnyNoLines}[basicstyle=\footnotesize\ttfamily,xleftmargin=0pt,xrightmargin=0pt]
+(*@Error: a postcondition could not be proved on this return path@*)
+      } else {
+
+(*@Related location: this is the postcondition that could not be proved@*)
+ensures ParseDecStr(s1+"."+s2).value.0 == s1 &&
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        ParseDecStr(s1+"."+s2).value.1 == "."+s2
+\end{dafnyNoLines}
+\caption{Example of a Dafny lemma that fails to verify without an assertion and the corresponding error message.}\label{fig:error}
+\end{figure}
+
+Consider the lemma \T{ParseDigitsAndDot} in \autoref{fig:error},
+which specifies a correctness property of the function \T{ParseDecStr}:
+namely, given an input string of the form \T{s1+"."+s2},
+where \T{s1} contains only digits,
+the function should return a pair \T{(s1, "."+s2)}
+(\eg \T{ParseDecStr("123.456")} should return \T{("123", ".456")}).%
+\footnote{The actual \cedar lemma requires that \finlinedafny{s1} be non-empty,
+but we elide this requirement for exposition purposes.}
+
+The programmer decides to prove this lemma by induction over the length of \T{s1};
+to this end, they introduce a conditional to separate the base case from the inductive case,
+and in the latter case, make a recursive call on the tail of \T{s1} to invoke the induction hypothesis.
+%
+Unfortunately, this is not enough to convince the Dafny verifier,
+which returns the error message shown at the bottom of the figure.
+%
+According to this error message,
+the solver is unable to prove that (the first conjunct of) the post-condition in Line~2
+is established by the \T{else} branch (\ie the recursive case).
+%
+The reason for this error is not that the lemma is incorrect,
+but rather that the chain of reasoning steps required to deduce the postcondition from the induction hypothesis is too long,
+and the solver gets stuck along the way.
+%
+We can help the solver by providing an intermediate ``checkpoint'' that helps break down the proof;
+more precisely, we need to insert the following \emph{assertion} at the end of the \T{else} branch (after Line~6):
+\begin{equation}\label{eq:helper}
+\mbox{\T{assert s1+"."+s2 == [s1[0]]+(s1[1..]+"."+s2)}}
+\end{equation}
+%
+This assertion explains the relationship between the string passed to \T{ParseDecStr} in the current context
+and its version passed to the recursive call.
+%
+It is challenging for the programmer to come up with this assertion
+(unless they have extensive experience with similar proofs);
+specifically, the error message provides very little insight into why the solver got stuck.
+
+
+\paragraph{Can LLMs Generate Assertions?}
+
+Encouraged by the success of LLMs in program repair~\cite{khatry2023words,ProgramRepairXia2023}
+and proof synthesis~\cite{BaldurFSE23First,DafnyFSE24,kamath2023Invariant},
+we conjecture that LLMs can be used to generate assertions automatically.
+%
+Unfortunately, na\"ively prompting an LLM with the code snippet and error message in \autoref{fig:error},
+and asking it to fix this code by inserting an assertion does not work well.
+%
+Here are three sample assertions this \naive baseline yields in our experiments:
+\begin{enumerate}[left=0pt]
+  \item \T{assert forall i | 0 <= i < |s1| :: '0' <= s1[i] <= '9'} after Line~3;
+  \item \T{assert '0' <= s1[0] <= '9'} after Line~4;
+  \item \T{assert s2 != ""} after Line~5.
+\end{enumerate}
+%
+Neither of the three assertions is helpful in proving the lemma
+(and the last assertion also does not hold),
+and moreover, they are not even inserted at the correct location!
+%
+We find this last result quite surprising,
+since the placement of assertions---unlike their content---is usually easy to determine for human programmers
+based on the error message.
+%
+
+\paragraph{The \tool Approach}
+
+\begin{figure*}
+  \centering
+  \includegraphics[width=1\textwidth]{chapters/laurel/fig/laurel_diagram.pdf}
+  \caption{Overview of \tool: it takes two inputs,
+  the lemma to fix, and the codebase used to find \emph{in-context examples}.
+  It identifies the assertion location in the lemma’s \T{else} branch using
+  the error message and selects relevant examples with a similar recursive structure.
+  Finally, it prompts the LLM to generate an assertion.}
+  \label{fig:overview}
+\end{figure*}
+
+To improve the success rate of LLMs in generating assertions,
+we propose to augment the prompt with two crucial pieces of information:
+\begin{enumerate*}
+  \item the most likely \emph{location} where the assertion should be inserted;
+  \item a set of relevant \emph{example assertions} from the same codebase.
+\end{enumerate*}
+%
+We implement this approach in a tool called \tool,
+whose high-level overview is shown in \autoref{fig:overview}.
+
+\tool starts with two inputs:
+\begin{enumerate*}[label=\alph*)]
+  \item a Dafny codebase
+  \item the name of the target lemma.%
+  \footnote{A verification unit in Dafny is either a \emph{lemma} or a \emph{method}, depending on the presence of executable code;
+  we refer to both as ``lemma'' for simplicity.}
+\end{enumerate*}
+%
+The goal is to insert an assertion into the target lemma so that it verifies.
+%
+In this work, we assume that the lemma can be fixed by inserting a single assertion;
+\autoref{sec:eval:threats} discusses how our approach might be extended to handle multiple assertions.
+
+\tool constructs the LLM prompt in two key steps.
+%
+First, it runs the Dafny verifier on the target lemma to obtain the error message.
+%
+It then analyzes the error message to determine the most likely location for the assertion;
+this location is used to insert an \emph{assertion placeholder} into the lemma,
+as shown in \autoref{fig:overview}.
+%
+Second, \tool analyzes the codebase to identify a small set of $m$ relevant assertions
+($m=6$ in our experiments)
+to be used as \emph{in-context examples} (also called few-shot demonstrations~\cite{fewshot}).
+%
+\tool then constructs the prompt, including the lemma with the assertion placeholder and the example assertions,
+and asking the LLM to generate an assertion to be inserted at the placeholder location.
+
+Given an output from the LLM,
+\tool replaces the placeholder with the generated assertion and re-runs the Dafny verifier;
+if the target lemma still fails to verify,
+\tool re-queries the LLM with the same prompt up to a fixed number $k$ of attempts
+($k=10$ in our experiments).%
+\footnote{In our experiments, to save cost, we sample $k$ outputs from the LLM at once, instead of querying the LLM $k$ times.}
+%
+The rest of this section gives a brief overview of our techniques for placeholder localization and example assertion selection;
+\autoref{sec:placeholder} and \autoref{sec:lemma_similarity} provide more details.
+
+\paragraph{Localizing the Assertion Placeholder}
+
+Recall that with a \naive prompt,
+the LLM struggles to determine the correct location for the missing assertion in our motivating example.
+%
+Our \textbf{first key insight} is that we can help the LLM localize the assertion by analyzing the error message.
+%
+Specifically, the error message in \autoref{fig:error} points to a \emph{violation} at the very end of the lemma
+(which is where post-conditions are checked);
+it also points to the \emph{faulty branch}---the \T{else} branch---which led to the violation.
+%
+Given this information, the optimal location for the assertion is at the end of the \T{else} branch:
+placing it outside of the conditional would make assertion (\ref{eq:helper}) ill-formed
+(since \T{s1} might be empty, so \T{s1[0]} might not exist);
+on the other hand, placing it further away from the violation (\eg before the recursive call)
+might not be as helpful, as at that point the solver is busy with something else (proving the preconditions of the recursive call).
+%
+\tool performs this analysis based on the control-flow graph of the lemma,
+as we explain in \autoref{sec:placeholder}.
+
+\paragraph{Selecting Example Assertions}
+
+Once we know \emph{where} to insert the assertion,
+the next challenge is to decide \emph{what} it should say.
+%
+Sometimes the missing assertion is syntactically similar to the failing specification
+or to other assertions within the same lemma.
+%
+In these cases, the LLM can often generate the correct assertion
+by taking hints from the error message or from the lemma itself.
+%
+This is not always the case, however,
+and it is not the case in our motivating example.
+
+
+Our \textbf{second key insight} is that the missing assertion is likely similar to other assertions
+elsewhere in the same codebase,
+which we can make available to the LLM as \emph{in-context examples}.
+%
+The challenge, however, is to select a small number of examples
+that are \emph{relevant} to the current context
+(that is, are likely to be syntactically similar to the missing assertion).
+%
+We further conjecture that relevant example assertions are likely to appear in proofs that are similar to our failing proof.
+%
+For instance, in our motivating example,
+we might consider other lemmas that involve string manipulation
+and have the structure of an inductive proof (with a base case and a recursive case).
+
+To find such similar lemmas, \tool introduces a code similarity metric,
+based on a hierarchical generalization of Levenshtein distance (\autoref{sec:lemma_similarity}),
+which is effective at capturing structural similarity between code snippets.
+%
+\tool then selects $m$ assertions from the codebase whose context---%
+\ie the surrounding lemma with the assertion removed---%
+is most similar to our target lemma.
+
+In our motivating example,
+this algorithm recommends the following assertion from a lemma with a similar recursive structure:
+%
+\begin{equation*}
+  \resizebox{\textwidth}{!}{\T{assert wrapNumSeg(s)+[DC] == wrapNumSegs([s[0]]) + (wrapNumSegs(s[1..]) + [DC])}}
+ \end{equation*}
+%
+You can see that this assertion is syntactically similar to the missing assertion (\ref{eq:helper}).
+%
+Given this assertion as an example,
+together with the assertion placeholder,
+the LLM can now generate the correct assertion for the motivating example.

@@ -1,0 +1,12 @@
+\section{Conclusion}
+
+We propose \tool, a tool that automatically generates assertions
+to fix Dafny proofs.
+On top of regular LLM techniques, \tool helps the LLM by localizing the assertion
+with a \emph{placeholder} and gives qualitative examples
+using our \emph{proof similarity} metric.
+On our new \dataset dataset, \tool synthesizes successfully
+56.6\% of all the assertions extracted from real-world code with improvements
+on both the success rate and the number of attempts needed.
+These numbers show that carefully crafted prompts make LLMs a suitable tool
+to automate assertion generation.
