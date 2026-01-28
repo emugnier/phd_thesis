@@ -1,0 +1,21 @@
+\section{Results: Impact of Verification on Development} \label{sec:build}
+
+First, we present our results on how formal verification affects the phase of \emph{building} software.
+%
+First, the \emph{specification} phase is significantly impacted, as the informal requirements
+of classical software engineering are now augmented with formal artifacts that describe
+what the code should do (\cref{sec:specification}).
+%
+Second, the use of verifiers significantly changes the \emph{implementation} phase because
+now, in addition writing the code that runs, engineers must also write auxiliary assertions
+and lemmas that are needed to help the verifier formally establish that the code meets its
+specification (\cref{sec:implementation}).
+%
+Third, the notion of \emph{debugging} is also transformed as a significant effort goes into
+understanding why the verifier fails to prove that the code meets its specification and to
+then determine the appropriate hints to provide to the verifier to help it succeed (\cref{sec:debug}).
+%
+Finally, we find that verifiers that make extensive use of brittle SMT solver heuristics
+to automate verification, add a new phase to the process of building software:
+that of \emph{hardening} the code so that the proofs continue to hold even as the specific
+solver heuristics might change across future versions (\cref{sec:harden}).

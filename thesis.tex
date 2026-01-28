@@ -11,6 +11,11 @@
 \usepackage{microtype}
 \usepackage[breaklinks=true,pdfborder={0 0 0}]{hyperref}
 \usepackage{graphicx}
+\usepackage{cleveref}
+\usepackage{listings}
+\usepackage{xspace}
+\usepackage{natbib}
+\usepackage{dafny}
 \AtBeginDocument{%
 	\settowidth\cvlabelwidth{\cvlabelfont 0000--0000}%
 }
@@ -107,14 +112,34 @@ Good thing it was not a snake.
 \mainmatter
 
 
-\chapter{An ordinary page}
+\chapter{On the Impact of Formal Verification on Software Development}
 
+\input{chapters/userstudy/intro}
 
+\input{chapters/userstudy/background}
+
+\input{chapters/userstudy/method}
+
+\input{chapters/userstudy/build}
+\input{chapters/userstudy/specification}
+\input{chapters/userstudy/proof}
+
+\input{chapters/userstudy/deploy}
+\input{chapters/userstudy/testing}
+\input{chapters/userstudy/review}
+\input{chapters/userstudy/deployment}
+\input{chapters/userstudy/maintenance}
+
+\input{chapters/userstudy/discussion}
+
+\input{chapters/userstudy/related}
+
+\input{chapters/userstudy/conclusion}
 \appendix
 
 % Stuff at the end of the dissertation goes in the back matter
 \backmatter
 \bibliographystyle{plain} % Or whatever style you want like plainnat
-\bibliography{references}
+\bibliography{ref}
 
 \end{document}

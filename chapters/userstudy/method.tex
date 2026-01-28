@@ -1,0 +1,138 @@
+\section{Method}
+
+\mypara{Participants.}
+We recruited 14 participants through referrals by Dafny maintainers,
+personal contacts, and snowball sampling.
+%
+The main inclusion criterion was that the participants had worked
+on a large Dafny project that exceeded 500 lines of code.
+%
+We stopped recruiting once the last few participants began repeating key ideas,
+which occurred after 14 interviews.
+%
+Although we may not have reached idealized theoretical saturation at all levels, we are confident that the concepts that emerged capture the key concerns of all the participants.
+%
+Additionally, this number is consistent with prior work, which found that saturation is typically achieved within about 12 interviews~\cite{HowManyInterviewsAreEnough}.
+%
+These 14 participants have a variety of backgrounds, as summarized in~\cref{tab:participants}.
+%
+We labeled them from P1 to P14 in the order of their interviews.
+%
+Two of the participants were students, four were computer scientists, four were software engineers, and two were professors.
+%
+Their experience ranged from under one to more than ten years, although most of them were relatively senior, with 10 participants having at least four years of experience.
+%
+The projects they worked on varied in size, from less than 1000 lines of code to
+more than 10,000 lines of code, covering a variety of domains.
+
+\begin{table}[]
+    \caption{Participants' backgrounds}
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{@{}llllllll@{}}
+    \toprule
+    \textbf{\#} & \textbf{Gender} & \textbf{Age} & \textbf{Occupation} & \textbf{Degree} & \textbf{Experience} & \textbf{Software verified}         & \textbf{\# LOC} \\ \midrule
+    P1          & F               & 25-34        & Student             & $\geq$ MS     & < 1 year                            & Distributed systems                & $\geq$500  \\
+    P2          & F               & 25-34        & Student             & $\geq$ MS     & 8-10 years                        & Compilers, distributed systems  & $\geq$10,000                \\
+    P3          & M               & 25-34        & Student             & BS        & 4 years                            & Mathematical proof                 & $\geq$1000      \\
+    P4          & M               & 34-45        & Computer Scientist  & $\geq$ MS     & $\geq$ 10 years                          & Security critical                  & $\geq$1000            \\
+    P5          & M               & 25-34        & Student             & $\geq$ MS     & 5-7 years                          & Cloud                              & $\geq$1000            \\
+    P6          & M               & 34-45        & Computer Scientist  & $\geq$ MS     & $\geq$ 10 years                         & Security critical                  & $\geq$20,000             \\
+    P7          & M               & 45-54        & Software Engineer   & $\geq$ MS     & $\geq$ 10 years                          & Authorization                      & $\geq$5000            \\
+    P8          & M               & 25-34        & Professor           & $\geq$ MS     & 5 years                           & Distributed systems                & $\geq$1000            \\
+    P9          & M               & 34-45        & Computer Scientist  & $\geq$ MS     & $\geq$ 10 years                          & Business critical                  & $\geq$1000      \\
+    P10         & M               & 25-34        & Professor           & $\geq$ MS     & 2 years                            & File system                        & $\geq$10,000                 \\
+    P11         & M               & 45-54        & Computer Scientist  & $\geq$ MS     & $\geq$ 10 years                          & Storage system                     & $\geq$10,000                \\
+    P12         & M               & 54-64        & Software Engineer   & BS        & $\geq$ 10 years                          & Cryptography                       & $\geq$10,000    \\
+    P13         & M               & 45-54        & Software Engineer   & BS        & $\geq$ 10 years                          & Cryptography                       & $\geq$10,000            \\ 
+    P14         & M               & 45-54        & Software Engineer   & $\geq$ MS     & $\geq$ 10 years                          & Blockchain                         & $\geq$10,000                 \\ \bottomrule
+    
+    \end{tabular}%
+    }
+    \label{tab:participants}
+\end{table}
+
+
+\mypara{Interview protocol.}
+%
+We conducted interviews from September 2024 to March 2025 in a semi-structured format,
+using a predefined set of questions while allowing the conversation to flow naturally.
+%
+We grouped the questions into four categories following the software development lifecycle
+---\textit{planning},
+\textit{design}, \textit{implementation}, and \textit{review/testing/maintenance}. We also asked the participants about their background and their projects.
+%
+The interviews lasted about an hour and were conducted over Zoom,
+except for the first two, which were held in person.
+%
+Conversations were recorded and transcribed automatically using Zoom.
+%
+The protocol was approved by our university's
+Institutional Review Board (IRB), and we obtained informed consent from our participants.
+%
+To protect participants' identities, we report only anonymous identifiers, such as P1, not their names.
+%
+Participants could also skip questions whose answers could reveal sensitive information.
+
+\mypara{Analysis.}
+%
+To analyze our interview transcripts, we used a constructivist grounded theory
+approach~\cite{charmaz2014constructing}.
+%
+Our method consisted of three main steps:
+%
+\begin{enumerate}
+    \item Paraphrasing each relevant sentence of the transcript using gerunds.
+    %
+    This resulted in 1081 segments.
+    %
+    \item Extracting low-level codes from the paraphrased content, yielding 325 codes.
+    %
+    \item Exploring relationships between codes primarily through diagrams.
+    %
+    From these relationships, we identified six key categories --
+    %
+    \emph{learning curve}, \emph{specification and proof technique},
+    \emph{proof brittleness}, \emph{assurance techniques},
+    \emph{integration with software development}, \emph{code changes}.
+\end{enumerate}
+Although this resembles axial coding, 
+our process relied more on visually mapping connections, often before writing memos,
+to document our ideas and observations about participants,
+as advised by \citet{charmaz2014constructing}.
+%
+Diagrams proved to be the most practical technique for extracting meaning from the data.
+
+\mypara{Threats to Validity.}
+%
+Our study presents a snapshot of the field at the time of our interviews, but it may not capture all
+perspectives.
+%
+None of our participants were complete Dafny novices, such as undergrad students,
+and we were constrained by the size of the Dafny community, which lacks
+diversity---for example, we were only able to recruit two women.
+%
+Additionally, while we believe that most of our findings are generalizable to other automated verifiers such as Verus or Fstar, our participants mainly discussed their Dafny experience, which may not be entirely transferable.
+
+%
+As verification researchers, our knowledge of the field influenced how we conducted the interviews and analyzed the data.
+%
+In fact, this study was motivated by observations of Dafny's use in industry.
+%
+With backgrounds in programming languages, systems, and verifiers, we saw an opportunity to study its use in practice.
+%
+We believe that the challenges observed on large-scale projects are not yet well understood.
+%
+People with different backgrounds might have had a different perspective. For example, a sociological perspective might have revealed more findings on the collaborative approaches taken by the participants.
+%
+All the coding was performed by the first author,
+but techniques such as memoing helped mitigate bias
+~\cite{ReliabilityInQualitativeResearch}. Additionally, using a systematic grounded theory approach helped reveal our biases and limit their impact.
+
+
+Finally, the interview process could also be a limitation.
+%
+Interviews do not necessarily reflect reality, but rather the participants'
+personal experience.
+%
+Moreover, confidentiality constraints may have restricted what participants
+could disclose, potentially omitting relevant insights.

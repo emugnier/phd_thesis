@@ -1,0 +1,211 @@
+\section{Introduction}
+\label{sec:intro}
+
+Verifiers such as Dafny~\cite{Leino2010Dafny},
+\fstar~\cite{fstar} and Verus~\cite{verus} are
+becoming increasingly prevalent in both academia
+and industry.
+%
+Just in the past few years, projects
+verifying cloud controllers~\cite{anvil}, and security
+modules~\cite{Verismo} have been published in communities
+outside of programming languages and formal methods,
+including operating systems and software engineering
+conferences, and more importantly, have been deployed
+in real-world systems~\cite{AWSVerifiedAuthorization, everparse}.
+
+%
+Despite the above successes,
+actual users of such verifiers
+remain few and far between.
+%
+We speculate that the adoption of \emph{and}
+hesitation in the use of such verifiers stems
+from their \emph{auto-active}~\cite{leino2010usable} nature. Unlike proof assistants, which require users to write proofs manually, auto-active verifiers use SMT solvers to attempt to automatically generate proofs.
+%
+On the bright side, adoption is driven by the ability to
+automate low-level proof details to SMT solvers,
+enabling users to focus on higher-level aspects of their
+proofs.
+%
+However, dark clouds swiftly appear when the
+automation inevitably fails, and the user is
+left to decipher what knowledge the verifier has
+(and lacks) to provide hints that can
+guide the verifier to a valid proof.
+%
+Consequently, the automation provided by these
+verifiers places them in an \emph{uncanny valley}
+in terms of usability, defeating the purpose
+of the tools, which was to make the fire of
+formal verification available to mere mortals
+without doctorates in formal methods.
+
+\mypara{How are verifiers used in practice?}
+%
+In this work, we chart this valley by investigating
+how auto-active verifiers are \emph{actually used}
+in real-world software development.
+%
+To this end, we recruited 14 experienced software
+engineers averaging five years of work experience,
+who have used auto-active verifiers like Dafny.
+%
+We then interviewed them and analyzed these
+interview logs using \emph{grounded theory}~\cite{charmaz2014constructing}
+to identify patterns and relationships
+in the data to answer three questions:
+%
+(RQ1) First, what \emph{expectations} should developers
+have regarding how verification might
+impact the design and implementation of
+software?
+%
+(RQ2) Second, what \emph{practices} do experience
+developers use to apply verification
+effectively?
+%
+(RQ3) Third, what \emph{opportunities} exist to
+simplify the use and, hence, expand the
+adoption of verification in software development?
+
+
+\mypara{Formal-first vs. Engineering-first Developers.}
+%
+We observed two distinct groups of participants.
+%
+\emph{Formal-first} developers
+have deep formal methods expertise that
+was then applied to real-world software
+engineering, and
+%
+\emph{engineering-first} developers
+were experienced software engineers
+who went on to use verification in a project.
+%
+We then find that even though verified
+software development has many of the same
+phases as traditional software development---requirements, implementation, testing,
+review, packaging, maintenance, \etc---developers 
+from the different groups have
+very different expectations and practices
+for the phases, summarized via three
+concrete contributions.
+
+\mypara{1. Designing \& Building Verified Software (\cref{sec:build}).}
+%
+Our first contribution addresses RQ1 with an analysis of how
+the use of auto-active verification impacts
+the design and implementation of software.
+%
+Of course, the design phase is
+impacted by the need to codify
+requirements as formal
+\emph{specifications}.
+%
+Crucially, the implementation phase
+is also affected, as now developers
+must write auxiliary assertions
+to prove lemmas, which are then
+combined to yield \emph{proofs}
+of top-level specifications.
+%
+There are two more key phases: \emph{debugging} failed proof
+attempts and \emph{hardening} the
+code to ensure that proofs continue
+to hold in the face of changes to
+SMT solver heuristics.
+%
+When debugging, we find that
+formal-first developers often
+want to spend time to root
+cause the failures, while
+engineering-first developers
+might prefer to fix
+suggestions that let them
+move on.
+%
+Similarly, we find that formal-first
+developers tend to appreciate the
+benefits of automation and how
+it avoids the need to spell out
+low-level details, while engineering-first
+developers consider the attendant proof-brittleness
+problems something that can be mitigated
+via discipline encoded in style guidelines.
+
+\mypara{2. Testing \& Deploying Verified Software (\cref{sec:assure},\cref{sec:package},\cref{sec:maintain}).}
+%
+Our second contribution focuses on RQ2 via an analysis
+of how verification impacts testing,
+review, deployment, and downstream
+maintenance of software.
+%
+Here, we find that a tight integration
+with classical software development
+practices is key, as \emph{testing}
+and \emph{code reviews} provide
+rare opportunities to catch errors
+in formal specifications, which would
+not be flagged by the verifier.
+%
+However, verification increases the burden of reviewing,
+as each review requires looking
+at changes in specifications, implementations,
+and also at the code generated via transpilation
+into the executable target language.
+%
+Interestingly, we find that during review
+formal-first developers tend to focus on
+the specifications while engineering-first
+developers focus on the code that will actually
+be executed.
+%
+We find that engineering-first developers
+particularly value the fact that
+verifiers enhance coding \emph{agility}
+by precisely automating change impact
+analysis, hence enabling aggressive code
+optimizations without fear of breaking
+functionality.
+
+\mypara{3. Opportunities for Improving Verified Software Engineering (\cref{sec:discussion}).}
+%
+Our third contribution answers RQ3 by identifying several concrete opportunities 
+from the interviews, for
+streamlining verified software engineering, by
+simplifying the processes of specification and proof,
+and tightening the integration with the other phases
+of the software development lifecycle.
+%
+These include conducting empirical studies
+that identify what constitutes clean proofs
+that are robust to solver changes and codifying
+them in style guides and linters; improving
+the interactivity of the verifier by providing
+an experience similar to that of the GNU Project Debugger (GDB), finding
+ways to automatically generate distinct review
+artifacts for specifications, proofs, and executed code;
+and finding ways to more seamlessly integrate tests and
+formal specifications, or even use unit testing
+as a proxy for proof.
+
+Together, our study is the first of
+which we are aware that uses interviews
+with experts to understand the impact of
+automated verifiers on real-world software
+engineering projects.
+%
+Some of our findings resonate
+with anecdotal evidence from blog
+posts~\cite{dafnyBlog}, talks~\cite{nehaSPLASH2024},
+and case-studies~\cite{CaseStudiesDafny}.
+%
+However, by systematizing this expert (``folk'')
+knowledge, we hope to enable readers
+to exploit this knowledge to improve
+their own software engineering with
+verification, and to devise the new
+algorithms, techniques, and tools needed
+to make formal verification more commonplace
+in software development.

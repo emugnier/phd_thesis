@@ -1,0 +1,613 @@
+\subsection{Proof Development}
+\label{sec:proof-dev}
+\label{sec:implementation}
+
+\myquote{In Dafny, very, very little goes through with literally zero proof}{P10}
+
+Eleven of our 14 participants agreed that a proof
+checked by the tool was the only acceptable outcome
+of a verification effort.
+%
+They enforced this standard to ``only commit verified code'' (P5).
+%
+The remaining participants reported to sometimes trusting their implementation
+for proofs that are too demanding, given something they know to be correct.
+
+The effort of ensuring ``correctness all the
+time'' (P10) is a result of the cost and the
+expectation put into verification.
+%
+As P11 explained:
+``If you're going to put in the effort of proving, you
+might as well get the benefits of the proof, which
+is that you don't have to worry about software bugs.''
+%
+P5 confirmed that justifying the effort
+of verification through guarantees is essential to convince leaders
+and stakeholders to invest in the process.
+
+While Dafny and similar \emph{auto-active} verifiers
+ use SMT solvers to automatically discharge
+many proof obligations, the developer must still
+spend substantial effort writing proofs of
+properties that lie outside the solver's
+capabilities.
+%
+Indeed, previous work \cite{ironfleet} shows that
+the number of lines of \emph{proof} code can be $10\times$
+the number of lines of \emph{implementation} code.
+%
+Thus, we sought to study how verification affected
+the actual coding practices of our participants,
+to identify what techniques and approaches they use
+when developing proofs.
+
+Regarding \emph{when} to write proofs, participants described two techniques:
+%
+(1) only verified code should be \emph{committed} to version control;
+%
+(2) proofs can be developed \emph{gradually}, using assumptions
+as temporary placeholders in lieu of full proofs;
+%
+Regarding \emph{how} to write proofs, we found two approaches:
+(1) structuring proofs in a \emph{top-down} fashion,
+starting with the top-level theorems, and then forking
+off the obligations needed to prove those theorems as
+helper lemmas, that are then assumed and then subsequently
+proved, perhaps using more lemmas, recursively;
+%
+(2) structuring proofs in a \emph{bottom-up} fashion
+by building up a library of proved lemmas, using those
+to prove more complex lemmas, until finally, the top-level
+theorem is proved.
+
+%
+
+
+\mypara{Gradual Proof.}
+%
+Due to the upfront cost of verification
+and the need to produce quick results, all participants
+reported using an incremental verification approach.
+P3 explained:
+``Dafny is very nice for this incremental development,
+you can just make a lemma pass with some, assert false,
+and see `Oh, with this assumption, can I make these things true?' ''
+%
+Using this method, Dafny allows users to build their
+proofs step by step in the same way interactive proof
+assistants allow skipping goals via \T{admit} or \T{sorry}.
+%
+Participant P11 wished Dafny would go further with a hybrid approach that would
+allow fuzzing or model checking the specification
+against the implementation to avoid fruitless
+proof effort when the implementation
+is \emph{not} a refinement~\cite{wirth-refinement} of the
+specification.
+
+Some participants felt that sometimes
+formal proof was unnecessary, and testing was sufficient.
+For example, P12 said
+``For most code, writing a dozen tests is actually
+going to test every interesting code path and so
+proving it for all possible inputs doesn't actually get your code
+any more correct because it was already correct.''
+%
+Consequently, P12 and P13 reported not writing contracts
+at all, and skipping verifying well-tested or relatively
+straight forward functions.
+%
+Of course, the participants noted that it is not always
+possible to bypass verification effort as Dafny forces you to
+write certain annotations to make the code compile.
+%
+For example, in some situations not covered by Dafny's
+built-in heuristics, the developer must specify
+a \T{decreases} clause to convince Dafny that
+a piece of looping or recursive code terminates.
+
+While such \emph{gradual} techniques is essential to verified
+development, they can blur the distinction between verified
+and unverified code, so developers have to take care to
+understand which bits of code are verified and which are not.
+
+\mypara{Top-down Proof.}
+%
+Participants P1, P3, P5, and P6, reported using a \emph{``top-down''}
+approach, starting by proving the main theorem \emph{before}
+proving the necessary lemmas.
+%
+They deferred, as unproved assumptions, proofs of any secondary
+propositions (sub-goals) needed to prove the top-level goals.
+%
+Often the decomposition into sub-goals is relatively straightforward
+as it often reflects the structure of the code. As P6 explained:
+``For each of the properties, there's a main lemma and,
+  generally, the structure of the code means that these
+  get split down into auxiliary lemmas about different
+  parts of the code which are easy to combine.''
+%
+This connection between the code and the proof structure
+was echoed by P5, P10 and P13, with P5 describing it as
+``almost a compositional proof starting from the specification.''
+%
+This technique, however, suffers from the exclusion of
+low-level details that might impact the proof but which
+are only discovered when trying to prove some very low-level
+lemma at the ``bottom'' of the proof dependency graph, and
+which could then invalidate the entire preceding proof effort.
+
+\mypara{Bottom-up Proof.}
+%
+To avoid such unpleasant surprises, P10 uniquely reported
+using a ``bottom-up'' approach where they started with self-contained
+low-level lemmas that were then incrementally used to build \emph{up}
+to the overall top-level theorem, thereby minimizing the risk of
+barking up the wrong (proof) tree.
+%
+However, P10 acknowledged that this approach only works for them
+as they know the main proof goal,
+``[Having] an idea of the whole design going in [makes it]
+a lot less likely that [I] verify something useless.''
+%
+Indeed, P10 notes this approach does not work for all
+projects, for instance ``when it's more experimental,
+this […] tends to waste time'', as this localized,
+bottom-up approach can lead to proving lemmas
+not needed by the top-level proof.
+
+Several participants reported using a \emph{hybrid}
+of the top-down and bottom-up approaches as a middle
+ground.
+%
+For example, P4 and P5 stated that when they
+knew the main theorem, and have some idea of
+what the implementation should be, they start
+top-down and then switch to bottom-up if needed.
+%
+This helps, as P4 explains to
+%
+``sanity check my backwards work by working forward a little bit,
+and seeing how far apart things are from meeting in the middle.''
+
+\subsection{Proof Debugging}
+\label{sec:debug}
+
+\myquote{Who's wrong, you or Dafny?}{P6}
+
+In addition to the debugging process that arises in
+regular software development, auto-active verification
+introduces a new debugging phase: the developer
+must understand and fix their proof when it is
+\emph{rejected} by the verifier.
+%
+Proof debugging is particularly challenging because
+it requires the developer to determine whether the is code rejected
+(1)~because the desired property \emph{does not hold}, or
+(2)~because Dafny simply \emph{cannot prove} it.
+%
+In the first case, the main reason for a proof
+failure is a mismatch between the contract and the
+code, as reported by six participants, and described
+in~\cref{sec:specification}.
+%
+In the second case, users referred to ``Dafny being wrong''
+as the verifier failing to prove a true statement without hints.
+%
+(Note that while Dafny can be wrong due to unsoundness issues,
+only one user reported encountering such a case in our study.)
+%
+Next, we illustrate the nature of the \emph{proof debugging problem}
+with an example, and describe how developers tackle it via
+a combination of attempting to \emph{passively interpret}
+the verifier's error message, \emph{actively probe} the
+verifier's internal state by adding assertions to the code,
+and \emph{adding assumptions} to narrow the cause of the failure.
+
+\mypara{The Proof Debugging Problem.}
+%
+\Cref{fig:simpleMathError} shows an example from P9
+that illustrates the challenge of proof debugging.
+%
+The method \T{applyDiscount} calculates the percentage
+\T{percent} of a given number \T{x}.
+%
+In this case, the author wanted to prove that,
+given a non-negative number \T{x} and a valid
+positive percentage \T{percent}, the result
+\T{res} is also non-negative.
+%
+However, when trying to verify this method,
+Dafny gives an error message indicating that it cannot prove the
+postcondition \T{0.0 <= res} without
+explaining why.
+%
+Now the developer has to determine whether
+%
+(1)~the \emph{code fails} the postcondition, or
+(2)~the \emph{verifier fails} to prove the postcondition
+owing to some limitation of Dafny or the SMT solver,
+and if so, what hint would enable successful proof.
+
+\mypara{Interpreting Error Messages.}
+%
+The first challenge of the debugging process is that of understanding what
+brought up an error message.
+%
+P9 described the feelings of another inexperienced user
+when reading the error message from~\cref{fig:simpleMathError}:
+%
+``The thing just tells you I can't prove that 0.1 * 0.1 is
+greater than 0 without any further explanation. Everyone will think that thing
+is [stupid]…They will think like this called an LLM or something.  But the thing
+is that it's supposed to be good at math. You have to give a better error message.''
+%
+Other users echoed this frustration. P2 described the output as ``spits out a no'';
+P3 called it ``black box thing'' and P7 remarked that it provides ``no help.''
+%
+In fact, while the error message gives you the location of the problem---the path, along which
+the postcondition could not be proved---it does not explain \emph{why} the proof failed.
+%
+Expanding on this, P12 confessed to being lost when it came to identifying
+what information was wrong or missing: ``How do I know which of the 1,000
+things involved in that assert are what [Dafny is] having a problem with?''
+%
+They also wished that Dafny could surface more information to the developer:
+``Down in the depths of Boogie (an intermediate verifier used by Dafny),
+it probably knows and there should be some way to percolate that back up.''
+%
+This frustration aligns with reports from P1, a beginner in Dafny,
+who suggested that the unclear error messages, on top of creating
+misunderstanding, can also lead to \emph{mistrust} in the tool.
+
+\mypara{Actively Probing via Assertions as Breakpoints.}
+%
+One standard method to debug proof errors
+like that in~\cref{fig:simpleMathError}
+is to add intermediate assertions that help
+to the developer build a mental model of what
+the verifier can and cannot prove, which then,
+ultimately, helps them identify \emph{hints}
+that can provide the information needed to
+complete the proof.
+%
+P9 explained that the inexperienced user
+added assertions on line~6 as they thought
+the problem was about inferring the value
+of \T{factor}.
+%
+However, the real problem was that the verification
+goal here involved \emph{non-linear arithmetic}, which
+is undecidable in general. In this instance, the SMT
+solver did not recognize that multiplying two
+non-negative numbers always results
+in a non-negative product.
+%
+Once this fact was provided as a \emph{hint}
+--- an explicit assertion on line~8 ---
+Dafny was able to prove the assertion and
+the postcondition, removing the error message.
+%
+This strategy of adding intermediate assertions
+or loop invariants is used by all participants
+to debug proofs as P10 noted, ``in Dafny, very,
+very little goes through with literally zero proof.''
+%
+P12 described their approach:
+``sprinkle in a bunch of assert statements
+to see what the actual problem is'' --- a method
+similar to adding breakpoints to
+inspect the machine state during regular debugging. P6 talked about a more methodical approach
+of ``asserting the post conditions at every exit point.''
+
+\mypara{Narrowing Failure Causes via Branches and Assumes.}
+%
+Another strategy, in the spirit of the top-down
+proof decomposition approach, was described by
+P10 as ``breaking down'' the proof by adding
+conditionals, splitting it into cases to precisely understand in which
+scenarios the proof fails.
+%
+Building on this, P12 also reported using \T{assume}
+statements to identify missing facts
+``you might assume […] something you know is true […]
+if that fixes your problem, then you […] need a lemma''
+(to prove that the \T{assume} proposition is indeed true.)
+%
+Summarizing this experience, P10 described it as
+``how to get better, more error messages out of the tool.''
+
+\mypara{Challenge: Building a Mental Model of Implicit Verifier State.}
+%
+While these strategies are effective,
+the example in ~\cref{fig:simpleMathError}
+illustrates that even if the user is broadly
+familiar with the techniques to debug proofs,
+they may not be able to explicate the missing
+facts; they added an assertion but were not
+able to identify the one that was needed.
+%
+To confirm this, both professors in our study
+(P10 and P8) reported that ultimately, the
+difficulty lies in building a \emph{mental model}
+of the internal verifier state --- \ie of what Dafny ``knows''
+at any point in the proof --- as Dafny's error
+message only tells you \emph{what} fails
+but not \emph{why} it fails.
+
+P10 and P8 compared the implicit proof context
+--- slowly made visible via the addition of
+assertions --- to the \emph{explicit} proof
+state of interactive provers like Isabelle,
+Rocq or Lean, which display to the user \emph{all}
+the facts that are ``known'' to the verifier
+at any point in the proof.
+%
+While they acknowledge that both auto-active
+and inter-active  tools can do similar things,
+P8 pointed out the challenge of Dafny's hidden
+verifier state was that ``users basically
+have to have a perfect model of the Dafny
+proof context in their head in order to
+understand what's going on.''
+%
+One way users can clarify the context is by adding annotations that make the state explicit. However, this can sometimes require
+an overwhelming number of annotations: P8 recalled
+once requiring ``some intermediate point […] with 50 assertions''.
+%
+To alleviate this, users need to use their intuition
+and experience to decide which assertions to add, as
+enumerating everything is impossible due to the numerous
+cases or facts to consider.
+%
+Ultimately, as P3 noted, proof debugging remains a complex challenge:
+``There is still [a gap] between the things that are intuitive for people,
+and that are intuitive for a computer'', suggesting that tools and
+techniques that help bridge this gap will have a significant impact
+on the usability of auto-active verifiers.
+
+\subsection{Proof Hardening}
+\label{sec:proof-robustness}
+\label{sec:harden}
+
+\myquote
+  {There's something soul crushing
+   about having to go back to things
+   that you thought were done,
+   and do them again.}
+   {P7}
+
+A key strength of auto-active verifiers like Dafny relative to interactive
+ones like Rocq or Lean is their ability to automatically discharge proof
+obligations by relying upon SMT solvers.
+%
+However, this automation comes at a cost: the proof obligations --- such as
+the one from \cref{fig:simpleMathError} --- often involve reasoning outside
+of decidable theories, and hence, rely on brittle SMT solver heuristics that
+can sometimes fail.
+%
+Thus, verified software development has to include a new phase: \emph{proof hardening},
+where the developer modifies or alters their code and proofs so that verification remains
+robust in the face of subsequent changes to the SMT solver's heuristics or the surrounding context.
+%
+Next, we illustrate the nature and extent of the \emph{proof brittleness problem},
+identify various \emph{sources of brittleness}, and describe the common
+\emph{hardening strategies} that developers use to address brittleness.
+
+\mypara{The Proof Brittleness Problem.}
+%
+A brittle proof is
+a previously verified proof where trivial,
+unrelated changes can cause the proof to fail.
+%
+This unpredictability was illustrated by P7,
+who explained introducing ``some little fiddly change
+to the code, just maybe pass one more element in the
+state […]
+and all the proofs would just stop working.''
+%
+Not only do small code modifications trigger failure,
+but P7, P10, P11, and P13 also reported that updating
+Dafny, changing the underlying Z3 solver, or even
+verifying on a different machine could break a brittle proof.
+%
+While these issues were revealed by minor changes,
+their fixes were a major enterprise and major setbacks.
+%
+Failures like these, where as P8 says,
+the verifier ``goes off the deep end,''
+were described as something that
+``bites you'' by P5, as a ``major roadblock''
+by P10, and ultimately, as inducing
+``existential dread'' and ``soul crushing'' by P7.
+
+We observed three categories of experience with
+proof brittleness.
+%
+P1, P3, and P9 had not encountered brittle proofs, likely because
+their proofs were simple.
+%
+Others \emph{reactively} addressed brittleness issues.
+%
+P10 explained ``we would increase our [resource] limit on random functions,
+just to get things through expediently.''
+%
+Finally, some were highly impacted by brittleness and proactively addressed brittleness.
+%
+P5, P6 and P7 faced significant delays,
+and P6 explaining that they performed
+``major refactoring'' that took a month.
+As a result, P11 prioritized fixing
+brittle proofs above all else:
+``If you ever get a timeout, stop what
+you're doing. Don't just try to paper
+it over […] and hide it, but actually
+[…] figure out why you have it and
+get rid of it.''
+
+
+\subsection*{Identifying Sources of Brittleness}
+
+Participant P7 explained that the root cause of brittleness is
+an over-reliance on Dafny's automation:
+%
+``[Dafny] encourages you to get into […] the worst possible
+shape in a production project where […] under the hood
+the complexity of what Z3 [can do] is at the limits of its ability.'' Major sources of brittleness included contexts, quantifiers, and frame conditions.
+
+\mypara{Contexts, Quantifiers.}
+%
+Brittleness, according to P8, P7, and P5,
+is exacerbated by large proof contexts, which
+can result in gigabytes of queries sent to the
+solver.
+%
+This overwhelming proof context size, P5 explained,
+arises from Dafny including ``useless assertions''
+and ``recursive function unrolling'' both of which
+can unnecessarily increase the context size.
+%
+Such large queries hinder debuggability
+and trust: ``if the proof […] requires five times the knowledge of humanity
+[…] I'm sorry, but you need to find a better argument [than the proof]'' (P5).
+%
+Despite this, P5, P7, and P8
+reported that the solver sometimes lacked critical
+information that could simplify the proofs.
+
+\mypara{Quantifiers and Frame Conditions.}
+%
+The amount of information was not the only challenge.
+P10 also cited \emph{quantifiers} as a source for proof
+complexity \cite{mariposa}.
+%
+P6, P7, P8 and P10 identified \emph{frame conditions} --- which prove that
+an object remains valid after modification --- as another source
+of which they ``have no control'' (P7).
+%
+Beyond individual sources of complexity, P7 and P10 observed a broader trend:
+the sizes of the proof contexts increased as they moved higher in the proof tree,
+\ie, as they proved higher-level properties using lower-level lemmas.
+%
+This scaling issue led them to question the feasibility of larger proofs, with
+P10 remarking ``if my project was twice as big, I'm not confident that things
+would work.''
+%
+This observation is counterintuitive as
+Dafny is a \emph{modular} verifier where
+each function is checked in isolation,
+at, one might expect, roughly the same cost,
+regardless of where the function was in
+the call-graph.
+%
+Indeed, one might expect higher-level proofs to be more
+abstract and therefore \emph{less} complex.
+%
+However, practical experience shows otherwise: the complexity of specifications
+frame conditions, and function definition unrolling snowballs as we go up the
+proof tree, making the proof-contexts ever larger and obligations harder to discharge.
+
+
+\subsection*{Proof Hardening Strategies}
+%
+Participants reported three main strategies to mitigate proof complexity:
+monitoring, adding hints, and changing the visibility of proof facts.
+
+\mypara{Resource Monitoring.}
+%
+P5, P6, P7, P8, and P10 monitored the solver's resource count---an indicator
+incremented based on the number of solver operations used---
+to track the proof complexity.
+%
+While, P5, P7 and P10 set a low resource count
+to make the proof fail if the limit was exceeded,
+no participant reported a reliable method for determining this limit.
+%
+In fact, P7 and P10 reported having to increase the limit over time.
+%
+This contradicts the intended goal of strict limits.
+P7 described their approach as ``pushing left'' by establishing a limit
+early to avoid major rework later, yet ultimately adjusting it as the proof grew.
+
+\mypara{Adding Hint Assertions.}
+%
+P3, P5, P6, P7, P8, and P10 reported adding assertions as ``hints''
+to help the solver.
+%
+These assertions are not mandatory,
+but as P7 noted, they can reduce the proof time
+from ``a ton of time'' to ``immediate'' as they
+can significantly reduce the space of terms
+where quantifiers are instantiated.
+%
+Meanwhile, P5 and P10 mentioned removing assertions to minimize the context.
+%
+To understand where to remove or add these assertions,
+P10 did so iteratively, while P5 used the \T{unsat core} functionality provided by Dafny.
+P13 reported using \T{assert false} to identify where changes are needed:
+%
+if adding \T{assert false} (which
+skips part of proof) reduces the proof time significantly, then the skipped part is responsible for the complexity.
+
+\mypara{Controlling Visibility.}
+%
+Eight participants optimized the visibility of
+proof facts, ensuring that only relevant information was
+available to the solver.
+%
+To do so, P1, P3, P6, and P10 further refined the proof
+by breaking it up into smaller lemmas to simplify goals
+and reduce the context size.
+%
+Additionally, P4, P5, P6, P7, P8, and P10 used a combination of
+\T{opaque} and \T{reveal} to hide or show elements in the proof context,
+especially for transparent functions.
+%
+Participant P13 wished \T{opaque} was
+ the default, as it would require
+fewer annotations (only when additional context is needed).
+
+In contrast with the top-down approach to proof development~(\cref{sec:proof-dev}), P7 described doing most
+of these optimizations in a bottom-up fashion.
+%
+P4 explained that a top-down approach makes
+proof optimization difficult:
+``it's also a dangerous path, because the prover can take
+five or ten seconds to prove something'' (which is slow for
+an interactive experience).
+
+\mypara{Style Guides: Towards A Discipline of Proof Hardening.}
+%
+To systematically mitigate against brittleness, P6, P7, P11, and P13
+adopted structured approaches, including style guides, which aim to
+reduce automation---and hence the instability due to automation heuristics---as much as possible.
+%
+For example, P5 advocated for minimal automation by saying
+``I want Dafny to be as stupid as possible
+  and not help me at all […]. Make me be really verbose,
+  but […] make sure the proofs are easy for [Dafny].''
+%
+Another reported that they ``don't play that game […] if I'm
+needing to bump the resource count up, I break it down,'' meaning
+they divide the proof into smaller lemmas
+instead of increasing the resource count to automatically verify
+a large proof.
+%
+To enforce this principle, they reported using the
+\texttt{isolate-assertion} flag to prove every assertion
+individually (rather than the default behavior
+of Dafny, which sends batches of assertions to the solver).
+
+Happily, while brittleness was unanimously acknowledged
+as a major issue, participants noted that Dafny has improved
+over time, offering better automation, more visibility features,
+and clearer guidelines on mitigating the problem~\cite{VerificationOptimization}.
+%
+As prescribed in these guidelines, several participants
+noted that brittleness is solvable when they
+``engineer their proof'' appropriately.
+%
+One participant remarked that ``it's just kind of having discipline
+in the same way, like writing C++ code, you say you can't use these
+seven features, and you might have to write more code. They can't use
+templates or something, but they still kind of know what to do.''

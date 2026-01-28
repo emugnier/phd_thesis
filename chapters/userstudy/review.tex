@@ -1,0 +1,182 @@
+\subsection{Code Review}
+\label{sec:review}
+
+\myquote
+  {The glorious things about proofs
+   is that they are self proving;
+   there is no need to look over
+   somebody else's proof.
+   }
+   {P11}
+
+Ten of our participants reported using
+code reviews to check for errors.
+%
+The three participants that did not mention code reviews
+were working on research projects where they were the
+sole contributor.
+%
+Next, we describe how verification changes the nature
+of code reviews by increasing the \emph{size} of each review and shifting the focus on what needs
+to be closely vetted by human eyes: \emph{specifications}
+(especially those used as trusted assumptions) and
+\emph{transpiled} execution targets.
+
+\mypara{Review Sizes.}
+%
+Three participants (P5, P6 and P7) described code reviews as ``quite large''
+ compared to recommended review best practices \cite{CodeReview}.
+%
+P6 explained that this increase in size relative to regular software development
+is due to ``multiple components all being updated at the same time'':
+the specification, the implementation (proof), and the transpiled code can all be
+changed in the same commit, making some participants remark that reviews were
+%
+``annoying to check because you had three times more things to check than a usual change.''
+%
+P4 and P12 also complained that ``the proofs are intertwined with the code,''
+affecting the readability of the review artifact as now methods can be longer
+than they would be otherwise since they also contain proof annotations.
+
+\mypara{Reviewing Trusted Specifications.}
+%
+Large review sizes push developers to prioritize
+review of components that they find critical.
+%
+In particular, participants reported \emph{not} reviewing proof code, as they were
+machine checked, and so ``there is no need to look over somebody else's proof,''
+thereby justifying not reviewing verified code.
+%
+P6 summarized this prioritization as ``the specification bit gets the
+most attention, and then the implementation, and then the transpiled [code].''
+%
+P9 explained the focus on specifications: ``reviews [are] the only time to
+check if the pre or post conditions are strong enough.''
+%
+P11 goes even one step further, as they explain that they only
+review the code that is ``trusted'' (\ie not machine verified)
+meaning the specifications for \verb+extern+ library methods.
+%
+Indeed, the dependencies such specifications and the underlying implementation
+can be a source of errors as P6 attested of a case where ``the actual code
+was changed but the contracts were not,'' thereby introducing an
+unsoundness in the specification arising from a mismatch between
+the semantics of the updated code and that of the assumed contract
+used for client verification.
+
+However, P11 remarked having had to sometimes read the proof
+``if maintainability is a problem'' (\cref{sec:harden}).
+%
+In this case, their main concern is clarity as they
+``would ask them to put in either a comment or an assertion''
+in cases where the proof is too hard to understand.
+%
+This choice between comments and assertions
+is interesting as they are not exactly equivalent
+as assertions are ``active comments'' which have
+an effect on the readability of the code and on
+the time taken by Dafny to carry out the verification.
+%
+Thus, developers try to use assertions only when they
+help harden the proof (\cref{sec:proof-robustness}).
+
+\mypara{Reviewing Unnecessary Specifications.}
+%
+One exception to the general trend of not reviewing
+verified code is that sometimes developers found
+it valuable to review (verified) specifications to
+detect any unnecessary clauses.
+%
+Participants P4, P8, P9, and P10 reported
+one common and easy smell is
+a \emph{missing correspondence}
+between the pre- and post-conditions
+for a procedure, \ie where a contract
+contains pre-conditions that are
+\emph{not necessary} to prove the
+contract's post-conditions.
+%
+For example, P9 observed that engineers
+without formal methods background often
+``implemented data structures with
+  preconditions but there was no protocol
+  or model on the other side against which
+  these preconditions would be verified.''
+
+P9 mentioned an example (shown in \cref{fig:simpleMathError}): the method \T{applyDiscount},
+which applies a percentage to a given number \T{x}.
+%
+The problem is that the precondition line~3---\emph{intended} to check that the
+discount is less than a 100---is not, in fact, required to establish the
+postcondition on line 4.
+%
+If this precondition is indeed required,
+then the postcondition should be strengthened
+with \T{ensures} clauses such as the one on line 6.
+%
+This issue stems from a disconnect in the
+user's mental model between what is true
+at \emph{run-time} and what is relevant
+to establish the desired properties at
+\emph{compile-time}.
+%
+To review such contracts, P9 advised
+``You should always start from your
+  postcondition and make that as tight
+  as possible and then try to have the most
+  liberal precondition on top. If you think
+  your precondition is too liberal then you
+  know your postcondition is too weak.''
+
+\mypara{Reviewing Transpiled Targets.}
+%
+As discussed in \cref{sec:package}, a major reason for selecting
+Dafny is that the verified implementation can then be \emph{transpiled}
+into a variety of target languages.
+%
+Of course, the transpiled code, in Java or Go, is not formally verified,
+and hence, developers spend time to carefully review it.
+%
+P5, P6, P7, P11 and P13 acknowledged looking
+at the transpiled code but at different frequencies.
+%
+At one extreme, P11 and P13 reported reviewing
+the target code only when they needed to investigate
+why something was not working correctly or to find
+opportunities for optimization.
+%
+Developers can only directly investigate the transpiled
+target code as Dafny does not have any debugging and profiling
+tools that could be used on the verified source.
+%
+On the other extreme, P5, P6 and P7 explained
+that they regularly inspected the transpiled code,
+because they lack trust in the transpiler
+compared to the case of classical compilation,
+\eg of Java source, where they ``don't check the JVM bytecode.''
+%
+These participants hoped that this trust deficiency
+will be remedied in the future.
+%
+P7 observed that looking at the transpiled target
+was at odds with the idea of viewing that code
+as a ``build artifact'' and that ``in principle
+we didn't need to get it code reviewed and just
+shove the changes into a version set.''
+
+
+Participants noted additional benefits beyond correctness from considering the transpiled code
+in the review.
+%
+Participants described it as
+``more democratic'' meaning that it
+\emph{facilitates collaboration} with
+other teams that are more familiar with
+the target language than Dafny.
+%
+P5 confirmed that ``it will be the [transpiled]
+Java that will be read by engineering production
+or security teams'' and consequently, they care
+deeply about the quality of the transpiled code
+and prioritize reviewing it as they want it to
+``be perfect'' before other teams review it.

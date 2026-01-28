@@ -83,8 +83,72 @@
 \newcommand{\dns}[1]{{\small \texttt{#1}}}
 \newcommand{\dnsfn}[1]{{\footnotesize \texttt{#1}}}
 \newcommand{\foo}{\dns{foo.com}\xspace}
-\newcommand{\ie}{i.e.}
-\newcommand{\eg}{e.g.}
-\newcommand{\etal}{et al.}
 \usepackage[flushleft]{threeparttable}
 \newcommand{\ltgrey}{\rowcolor[gray]{0.95}}
+
+% Additional macros for userstudy chapter
+\newcommand{\mypara}[1]{\noindent\textbf{#1}}
+\newcommand{\myquote}[2]{\begin{quote}\itshape #1 \\ \hfill --- #2\end{quote}}
+
+\newcommand{\fstar}{\ensuremath{F^{*}}\xspace}
+\newcommand{\mycomment}[3][\color{red}]{{#1{[{#2}: {#3}]}}}
+\newcommand{\mjc}[1]{\mycomment[\color{blue}]{MJC}{#1}}
+\newcommand{\eric}[1]{\mycomment[\color{purple}]{EM}{#1}}
+\newcommand{\ranjit}[1]{\mycomment[\color{red}]{RJ}{#1}}
+\newcommand{\remove}[1]{\textcolor{blue}{\st{#1}}}
+\newcommand{\T}[1]{\inlinedafny{#1}}
+
+\newcommand{\redt}[1]{\textcolor{red}{#1}}
+\newcommand{\bluet}[1]{\textcolor{blue}{#1}}
+\newcommand{\magt}[1]{\textcolor{magenta}{#1}}
+\newcommand{\cyant}[1]{\textcolor{cyan}{#1}}
+\newcommand{\grayt}[1]{\textcolor{gray}{#1}}
+\newcommand{\tealt}[1]{\textcolor{teal}{#1}}
+\newcommand{\violett}[1]{\textcolor{violet}{#1}}
+\newcommand{\purplet}[1]{\textcolor{purple}{#1}}
+
+%%% Words and abbreviations
+
+\newcommand{\naive}{na\"{i}ve\xspace}
+\newcommand{\etc}{\emph{etc}\xspace}
+\newcommand{\ie}{\emph{i.e.}\xspace}
+\newcommand{\Ie}{\emph{I.e.}\xspace}
+\newcommand{\eg}{\emph{e.g.}\xspace}
+\newcommand{\Eg}{\emph{E.g.}\xspace}
+\newcommand{\etal}{\emph{et~al.}\xspace}
+\newcommand{\adhoc}{\emph{ad hoc}\xspace}
+\newcommand{\viz}{\emph{viz.}\xspace}
+\newcommand{\aka}{\textit{a.k.a.}\xspace}
+\newcommand{\cf}{\textit{cf.}\xspace}
+\newcommand{\wrt}{\emph{wrt.}\xspace}
+\newcommand{\Iff}{\emph{iff}\xspace}
+
+%%% Tool names
+
+\newcommand{\tname}[1]{\textsc{#1}\xspace}
+\newcommand{\tool}{\tname{Laurel}}
+\newcommand{\dataset}{\tname{DafnyGym}}
+\newcommand{\cedar}{\tname{Cedar}}
+\newcommand{\vmc}{\tname{DafnyVMC}}
+\newcommand{\libraries}{\tname{Dafny-Libraries}}
+
+\newcommand{\baseline}{\emph{Baseline}\xspace}
+\newcommand{\errmsg}{\emph{Error}\xspace}
+\newcommand{\placeholder}{\emph{Placeholder}\xspace}
+\newcommand{\placeholderr}{\emph{Placeholder+Error}\xspace}
+\newcommand{\random}{\emph{Random}\xspace}
+\newcommand{\similarity}{\emph{Similarity}\xspace}
+\newcommand{\similaritynoplaceholder}{\emph{Similarity-no-placeholder}\xspace}
+\newcommand{\embedding}{\emph{Embedding}\xspace}
+\newcommand{\tfidf}{\emph{TF-IDF}\xspace}
+
+
+\newcommand{\seqsim}{\ensuremath{\mathcal{S}}\xspace}
+\newcommand{\tokensim}{\ensuremath{\mathsf{TokenSim}}\xspace}
+\newcommand{\linesim}{\ensuremath{\mathsf{LineSim}}\xspace}
+\newcommand{\codesim}{\ensuremath{\mathsf{ProofSim}}\xspace}
+
+%%% Numbers
+
+\newcommand{\ntasks}{143\xspace}
+\newcommand{\maxattempts}{10\xspace}

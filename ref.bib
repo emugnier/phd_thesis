@@ -1,0 +1,935 @@
+
+@inproceedings{CodeReview,
+  author    = {Ram, Achyudh and Sawant, Anand Ashok and Castelluccio, Marco and Bacchelli, Alberto},
+  title     = {What makes a code change easier to review: an empirical investigation on code change reviewability},
+  year      = {2018},
+  isbn      = {9781450355735},
+  publisher = {Association for Computing Machinery},
+  address   = {New York, NY, USA},
+  url       = {https://doi.org/10.1145/3236024.3236080},
+  doi       = {10.1145/3236024.3236080},
+  abstract  = {Peer code review is a practice widely adopted in software projects to improve the quality of code. In current code review practices, code changes are manually inspected by developers other than the author before these changes are integrated into a project or put into production. We conducted a study to obtain an empirical understanding of what makes a code change easier to review. To this end, we surveyed published academic literature and sources from gray literature (blogs and white papers), we interviewed ten professional developers, and we designed and deployed a reviewability evaluation tool that professional developers used to rate the reviewability of 98 changes. We find that reviewability is defined through several factors, such as the change description, size, and coherent commit history. We provide recommendations for practitioners and researchers. Public preprint [https://doi.org/10.5281/zenodo.1323659]; data and materials [https://doi.org/10.5281/zenodo.1323659].},
+  booktitle = {Proceedings of the 2018 26th ACM Joint Meeting on European Software Engineering Conference and Symposium on the Foundations of Software Engineering},
+  pages     = {201–212},
+  numpages  = {12},
+  keywords  = {pull request, code review, Code quality},
+  location  = {Lake Buena Vista, FL, USA},
+  series    = {ESEC/FSE 2018}
+}
+
+@article{daikon,
+  author    = {Michael D. Ernst and
+               Jeff H. Perkins and
+               Philip J. Guo and
+               Stephen McCamant and
+               Carlos Pacheco and
+               Matthew S. Tschantz and
+               Chen Xiao},
+  title     = {The Daikon system for dynamic detection of likely invariants},
+  journal   = {Sci. Comput. Program.},
+  volume    = {69},
+  number    = {1-3},
+  pages     = {35--45},
+  year      = {2007},
+  url       = {https://doi.org/10.1016/j.scico.2007.01.015},
+  doi       = {10.1016/J.SCICO.2007.01.015},
+  timestamp = {Wed, 17 Feb 2021 21:55:51 +0100},
+  biburl    = {https://dblp.org/rec/journals/scp/ErnstPGMPTX07.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{target,
+  author    = {Eric L. Seidel and
+               Niki Vazou and
+               Ranjit Jhala},
+  editor    = {Jan Vitek},
+  title     = {Type Targeted Testing},
+  booktitle = {Programming Languages and Systems - 24th European Symposium on Programming,
+               {ESOP} 2015, Held as Part of the European Joint Conferences on Theory
+               and Practice of Software, {ETAPS} 2015, London, UK, April 11-18, 2015.
+               Proceedings},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {9032},
+  pages     = {812--836},
+  publisher = {Springer},
+  year      = {2015},
+  url       = {https://doi.org/10.1007/978-3-662-46669-8\_33},
+  doi       = {10.1007/978-3-662-46669-8\_33},
+  timestamp = {Sun, 25 Oct 2020 23:07:09 +0100},
+  biburl    = {https://dblp.org/rec/conf/esop/SeidelVJ15.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{dafny-counterexamples,
+  author    = {Aleksandar Chakarov and
+               Aleksandr Fedchin and
+               Zvonimir Rakamaric and
+               Neha Rungta},
+  editor    = {Dana Fisman and
+               Grigore Rosu},
+  title     = {Better Counterexamples for Dafny},
+  booktitle = {Tools and Algorithms for the Construction and Analysis of Systems
+               - 28th International Conference, {TACAS} 2022, Held as Part of the
+               European Joint Conferences on Theory and Practice of Software, {ETAPS}
+               2022, Munich, Germany, April 2-7, 2022, Proceedings, Part {I}},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {13243},
+  pages     = {404--411},
+  publisher = {Springer},
+  year      = {2022},
+  url       = {https://doi.org/10.1007/978-3-030-99524-9\_23},
+  doi       = {10.1007/978-3-030-99524-9\_23},
+  timestamp = {Fri, 29 Apr 2022 14:50:36 +0200},
+  biburl    = {https://dblp.org/rec/conf/tacas/ChakarovFRR22.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+
+
+@inproceedings{isabelle-formalization-quality,
+  author    = {Huch, Fabian and Stathopoulos, Yiannos},
+  title     = {Formalization Quality in Isabelle},
+  year      = {2023},
+  isbn      = {978-3-031-42752-7},
+  publisher = {Springer-Verlag},
+  address   = {Berlin, Heidelberg},
+  url       = {https://doi.org/10.1007/978-3-031-42753-4_10},
+  doi       = {10.1007/978-3-031-42753-4_10},
+  abstract  = {Little is known about the quality of formalizations in interactive theorem proving. In this work, we analyze the relationship between static analysis warnings (lints) and maintenance effort for 6470 Isabelle theories, create models to predict lints based on structural features, and compare the results to a small ground-truth dataset collected with the help of domain experts. We find that for the majority of lints, there is a significant but low-strength correlation between frequency of occurrence and churn in maintenance change-sets. In particular, for proofs using tactic methods (which can be brittle), the Spearman correlation is highest with a strength of 0.16, p<0.005. Furthermore, when classifying theories as lint-prone based on their formal entity graphs (which capture the dependencies between underlying logical entities), random forests outperform even deep learning models on our data, achieving 58 \% precision and 21 \% recall. Finally, in our ground-truth dataset of 35 good and 35 problematic theories, our pre-defined criterion that identifies theories with more than one lint every 100 lines achieves 95 \% precision and 51 \% recall. Remarkably, this is very close to the optimal criterion, which we observe at one lint every 109 lines. Moreover, the random forest model trained for lint-proneness even achieves perfect accuracy at 43 \% recall, providing additional evidence of its effectiveness.},
+  booktitle = {Intelligent Computer Mathematics: 16th International Conference, CICM 2023, Cambridge, UK, , September 5–8, 2023 Proceedings},
+  pages     = {142–157},
+  numpages  = {16},
+  keywords  = {Deep learning, Machine learning, Change frequency, Code smell, Linter, Static analysis, Formalization quality, Isabelle},
+  location  = {Cambridge, United Kingdom}
+}
+
+@article{isabelle-linter,
+  author     = {Yecine Megdiche and
+                Fabian Huch and
+                Lukas Stevens},
+  title      = {A Linter for Isabelle: Implementation and Evaluation},
+  journal    = {CoRR},
+  volume     = {abs/2207.10424},
+  year       = {2022},
+  url        = {https://doi.org/10.48550/arXiv.2207.10424},
+  doi        = {10.48550/ARXIV.2207.10424},
+  eprinttype = {arXiv},
+  eprint     = {2207.10424},
+  timestamp  = {Sun, 02 Oct 2022 15:32:50 +0200},
+  biburl     = {https://dblp.org/rec/journals/corr/abs-2207-10424.bib},
+  bibsource  = {dblp computer science bibliography, https://dblp.org}
+}
+
+
+@inproceedings{mariposa,
+  author    = {Zhou, Yi and Bosamiya, Jay and Takashima, Yoshiki and Li, Jessica and Heule, Marijn and Parno, Bryan},
+  booktitle = {2023 Formal Methods in Computer-Aided Design (FMCAD)},
+  title     = {Mariposa: Measuring SMT Instability in Automated Program Verification},
+  year      = {2023},
+  volume    = {},
+  number    = {},
+  pages     = {178-188},
+  keywords  = {Limiting;Design automation;Automation;Manuals;Benchmark testing;Dispatching;Complex systems},
+  doi       = {10.34727/2023/isbn.978-3-85448-060-0_26}
+}
+
+@article{wirth-refinement,
+  author     = {Wirth, Niklaus},
+  title      = {Program development by stepwise refinement},
+  year       = {1971},
+  issue_date = {April 1971},
+  publisher  = {Association for Computing Machinery},
+  address    = {New York, NY, USA},
+  volume     = {14},
+  number     = {4},
+  issn       = {0001-0782},
+  url        = {https://doi.org/10.1145/362575.362577},
+  doi        = {10.1145/362575.362577},
+  journal    = {Commun. ACM},
+  month      = apr,
+  pages      = {221–227},
+  numpages   = {7},
+  keywords   = {education in programming, programming techniques, stepwise program construction}
+}
+
+
+
+@inproceedings{compcert,
+  author       = {Xavier Leroy},
+  title        = {Formal certification of a compiler back-end, or:
+                  programming a compiler with a proof assistant},
+  booktitle    = {33rd ACM symposium on Principles of Programming Languages},
+  year         = 2006,
+  publisher    = {ACM Press},
+  pages        = {42--54},
+  url          = {http://xavierleroy.org/publi/compiler-certif.pdf},
+  urlpublisher = {http://doi.acm.org/10.1145/1111037.1111042},
+  hal          = {http://hal.inria.fr/inria-00000963/},
+  abstract     = {This paper reports on the development and formal certification (proof
+                  of semantic preservation) of a compiler from Cminor (a C-like
+                  imperative language) to PowerPC assembly code, using the Coq proof
+                  assistant both for programming the compiler and for proving its
+                  correctness.  Such a certified compiler is useful in the context of
+                  formal methods applied to the certification of critical software: the
+                  certification of the compiler guarantees that the safety properties
+                  proved on the source code hold for the executable compiled code as well.},
+  pubkind      = {conf-int-mono}
+}
+
+
+@misc{duvet,
+  author       = {{AWS Labs}},
+  title        = {Duvet: A requirements traceability tool},
+  howpublished = {\url{https://github.com/awslabs/duvet}},
+  year         = 2025
+}
+
+@inproceedings{leino2008specification,
+  author    = {Leino, Rustan},
+  title     = {Specification and Verification of Object-Oriented Software},
+  booktitle = {Marktoberdorf International Summer School 2008},
+  url       = {https://www.microsoft.com/en-us/research/publication/specification-verification-object-oriented-software/},
+  year      = 2008
+}
+
+@misc{rfc2119,
+  series       = {Request for Comments},
+  number       = 2119,
+  howpublished = {RFC 2119},
+  publisher    = {RFC Editor},
+  doi          = {10.17487/RFC2119},
+  url          = {https://www.rfc-editor.org/info/rfc2119},
+  author       = {Scott O. Bradner},
+  title        = {{Key words for use in RFCs to Indicate Requirement Levels}},
+  year         = 1997
+}
+
+@misc{DuvetExample,
+  title        = {{AwsKmsKeyring.dfy}},
+  howpublished = {\url{https://github.com/aws/aws-cryptographic-material-providers-library/blob/main/AwsCryptographicMaterialProviders/dafny/AwsCryptographicMaterialProviders/src/Keyrings/AwsKms/AwsKmsKeyring.dfy\#L237}},
+  year         = {2025}
+}
+
+@misc{IronfleetExample,
+  title        = {{UpperBound.i.dfy}},
+  howpublished = {\url{https://github.com/microsoft/Ironclad/blob/2fe4dcdc323b92e93f759cc3e373521366b7f691/ironfleet/src/Dafny/Distributed/Impl/Common/UpperBound.i.dfy\#L10}},
+  year         = {2015}
+}
+@inproceedings{Liskov1987,
+  author    = {Liskov, Barbara},
+  title     = {Keynote address — data abstraction and hierarchy},
+  booktitle = {OOPSLA '87: Addendum to the Proceedings on Object-oriented Programming Systems, Languages and Applications (Addendum)},
+  year      = {1987},
+  pages     = {17–34},
+  doi       = {10.1145/62138.62141},
+  isbn      = {0897912667}
+}
+
+@inproceedings{sel4,
+  author    = {Klein, Gerwin and Elphinstone, Kevin and Heiser, Gernot and Andronick, June and Cock, David and Derrin, Philip and Elkaduwe, Dhammika and Engelhardt, Kai and Kolanski, Rafal and Norrish, Michael and Sewell, Thomas and Tuch, Harvey and Winwood, Simon},
+  title     = {seL4: formal verification of an OS kernel},
+  year      = {2009},
+  isbn      = {9781605587523},
+  url       = {https://doi.org/10.1145/1629575.1629596},
+  doi       = {10.1145/1629575.1629596},
+  booktitle = {Proceedings of the ACM SIGOPS 22nd Symposium on Operating Systems Principles}
+}
+
+@inproceedings{ironfleet,
+  author    = {Hawblitzel, Chris and Howell, Jon and Kapritsos, Manos and Lorch, Jacob R. and Parno, Bryan and Roberts, Michael L. and Setty, Srinath and Zill, Brian},
+  title     = {IronFleet: proving practical distributed systems correct},
+  year      = {2015},
+  isbn      = {9781450338349},
+  url       = {https://doi.org/10.1145/2815400.2815428},
+  doi       = {10.1145/2815400.2815428},
+  booktitle = {Proceedings of the 25th Symposium on Operating Systems Principles}
+}
+
+@inproceedings{qed-in-context,
+  author  = {Shi, Jessica and Torczon, Cassia and Goldstein, Harrison and Pierce, Benjamin C. and Head, Andrew},
+  title   = {QED in Context: An Observation Study of Proof Assistant Users},
+  journal = {OOPSLA},
+  year    = {2025},
+  doi     = {10.1145/3720426},
+  url     = {https://doi.org/10.1145/3720426}
+}
+
+@inproceedings{Limitationsformalmethods,
+  author    = {Shaoying Liu and Adams, R.},
+  booktitle = {Proceedings 1995 Asia Pacific Software Engineering Conference},
+  title     = {Limitations of formal methods and an approach to improvement},
+  year      = {1995},
+  doi       = {10.1109/APSEC.1995.496999}
+}
+
+@inproceedings{UsabilityHypothesesVerification,
+  author    = {Pearce, David J.},
+  title     = {Some usability hypotheses for verification},
+  year      = {2015},
+  url       = {https://doi.org/10.1145/2846680.2846691},
+  doi       = {10.1145/2846680.2846691},
+  booktitle = {Proceedings of the 6th Workshop on Evaluation and Usability of Programming Languages and Tools},
+  series    = {PLATEAU 2015}
+}
+
+@inproceedings{CaseStudiesDafny,
+  author    = {Faria, Jo{\~a}o Pascoal
+               and Abreu, Rui},
+  title     = {Case Studies of Development of Verified Programs with Dafny for Accessibility Assessment},
+  booktitle = {Fundamentals of Software Engineering},
+  year      = {2023},
+  isbn      = {978-3-031-42441-0}
+}
+
+@misc{huang2024lessonsformallyverifieddeployed,
+  title         = {Lessons from Formally Verified Deployed Software Systems (Extended version)},
+  author        = {Li Huang and Sophie Ebersold and Alexander Kogtenkov and Bertrand Meyer and Yinling Liu},
+  year          = {2024},
+  eprint        = {2301.02206},
+  archiveprefix = {arXiv},
+  primaryclass  = {cs.SE},
+  url           = {https://arxiv.org/abs/2301.02206}
+}
+
+@article{QEDAtLargeSurvey,
+  author  = {Ringer, Talia and Palmskog, Karl and Sergey, Ilya and Gligoric, Milos and Tatlock, Zachary},
+  title   = {QED at Large: A Survey of Engineering of Formally Verified Software},
+  year    = {2019},
+  url     = {https://doi.org/10.1561/2500000045},
+  doi     = {10.1561/2500000045},
+  journal = {Found. Trends Program. Lang.}
+}
+
+@inproceedings{DafnyDala,
+  author    = {Noble, James and Mackay, Julian and Wrigstad, Tobias and Fawcet, Andrew and Homer, Michael},
+  title     = {Dafny vs. Dala: Experience with Mechanising Language Design},
+  year      = {2024},
+  isbn      = {9798400711114},
+  publisher = {Association for Computing Machinery},
+  address   = {New York, NY, USA},
+  url       = {https://doi.org/10.1145/3678721.3686228},
+  doi       = {10.1145/3678721.3686228},
+  booktitle = {Proceedings of the 26th ACM International Workshop on Formal Techniques for Java-like Programs}
+}
+
+@misc{ColouringFlagsDafnyIdris,
+  author    = {de Muijnck-Hughes, J. and Noble, J.},
+  title     = {Colouring Flags with Dafny \& Idris},
+  booktitle = {Dafny 2024},
+  year      = {2024}
+}
+
+@misc{dareingreduceannotationoverheads,
+  title         = {DAReing to reduce the annotation overheads of verified programs},
+  author        = {Gudmund Grov and Duncan Cameron and Leon McGregor},
+  year          = {2017},
+  eprint        = {1706.04023},
+  archiveprefix = {arXiv},
+  primaryclass  = {cs.SE},
+  url           = {https://arxiv.org/abs/1706.04023}
+}
+
+@misc{LearnEmDafny,
+  author  = {Noble, James},
+  title   = {Learn 'em Dafny!},
+  address = {Wellington, New Zealand},
+  email   = {kjx@programming.ac.nz},
+  year    = {2024}
+}
+
+@misc{ho2024incrementalproofdevelopmentdafny,
+  title         = {Incremental Proof Development in Dafny with Module-Based Induction},
+  author        = {Son Ho and Clément Pit-Claudel},
+  year          = {2024},
+  eprint        = {2401.16233},
+  archiveprefix = {arXiv},
+  primaryclass  = {cs.PL},
+  url           = {https://arxiv.org/abs/2401.16233}
+}
+
+@inproceedings{PlanningChange,
+  author    = {Woos, Doug and Wilcox, James R. and Anton, Steve and Tatlock, Zachary and Ernst, Michael D. and Anderson, Thomas},
+  title     = {Planning for change in a formal verification of the raft consensus protocol},
+  year      = {2016},
+  isbn      = {9781450341271},
+  url       = {https://doi.org/10.1145/2854065.2854081},
+  doi       = {10.1145/2854065.2854081},
+  booktitle = {Proceedings of the 5th ACM SIGPLAN Conference on Certified Programs and Proofs}
+}
+
+@inproceedings{10.1145/2034773.2034798,
+  author    = {Gonthier, Georges and Ziliani, Beta and Nanevski, Aleksandar and Dreyer, Derek},
+  title     = {How to make ad hoc proof automation less ad hoc},
+  year      = {2011},
+  isbn      = {9781450308656},
+  publisher = {Association for Computing Machinery},
+  address   = {New York, NY, USA},
+  url       = {https://doi.org/10.1145/2034773.2034798},
+  doi       = {10.1145/2034773.2034798},
+  abstract  = {Most interactive theorem provers provide support for some form of user-customizable proof automation. In a number of popular systems, such as Coq and Isabelle, this automation is achieved primarily through tactics, which are programmed in a separate language from that of the prover's base logic. While tactics are clearly useful in practice, they can be difficult to maintain and compose because, unlike lemmas, their behavior cannot be specified within the expressive type system of the prover itself.We propose a novel approach to proof automation in Coq that allows the user to specify the behavior of custom automated routines in terms of Coq's own type system. Our approach involves a sophisticated application of Coq's canonical structures, which generalize Haskell type classes and facilitate a flexible style of dependently-typed logic programming. Specifically, just as Haskell type classes are used to infer the canonical implementation of an overloaded term at a given type, canonical structures can be used to infer the canonical proof of an overloaded lemma for a given instantiation of its parameters. We present a series of design patterns for canonical structure programming that enable one to carefully and predictably coax Coq's type inference engine into triggering the execution of user-supplied algorithms during unification, and we illustrate these patterns through several realistic examples drawn from Hoare Type Theory. We assume no prior knowledge of Coq and describe the relevant aspects of Coq type inference from first principles.},
+  booktitle = {Proceedings of the 16th ACM SIGPLAN International Conference on Functional Programming},
+  pages     = {163–175},
+  numpages  = {13},
+  keywords  = {canonical structures, coq, custom proof automation, hoare type theory, interactive theorem proving, tactics, type classes},
+  location  = {Tokyo, Japan},
+  series    = {ICFP '11}
+}
+
+@article{Howtomakeadhoctproofautomationlessadhoc,
+  author = {Gonthier, Georges and Ziliani, Beta and Nanevski, Aleksandar and Dreyer, Derek},
+  title  = {How to make ad hoc proof automation less ad hoc},
+  year   = {2011},
+  issn   = {0362-1340},
+  url    = {https://doi.org/10.1145/2034574.2034798},
+  doi    = {10.1145/2034574.2034798}
+}
+
+@article{GroundedCopilot,
+  author = {Barke, Shraddha and James, Michael B. and Polikarpova, Nadia},
+  title  = {Grounded Copilot: How Programmers Interact with Code-Generating Models},
+  year   = {2023},
+  number = {OOPSLA1},
+  url    = {https://doi.org/10.1145/3586030},
+  doi    = {10.1145/3586030}
+}
+
+
+@article{GroundedTheoryForSoftwareDevelopment,
+  author = {Adolph, Steve and Hall, Wendy and Kruchten, Philippe},
+  doi    = {10.1007/s10664-010-9152-6},
+  isbn   = {1573-7616},
+  title  = {Using grounded theory to study the experience of software development},
+  url    = {https://doi.org/10.1007/s10664-010-9152-6},
+  year   = {2011}
+}
+
+@article{ReconcilingPerspectivesGT,
+  title   = {Reconciling perspectives: A grounded theory of how people manage the process of software development},
+  journal = {Journal of Systems and Software},
+  year    = {2012},
+  issn    = {0164-1212},
+  doi     = {https://doi.org/10.1016/j.jss.2012.01.059},
+  author  = {Steve Adolph and Philippe Kruchten and Wendy Hall}
+}
+
+@article{GroundedTheorySelfOrganizing,
+  author  = {Hoda, Rashina and Noble, James and Marshall, Stuart},
+  title   = {Developing a grounded theory to explain the practices of self-organizing Agile teams},
+  year    = {2012},
+  issn    = {1382-3256},
+  url     = {https://doi.org/10.1007/s10664-011-9161-0},
+  doi     = {10.1007/s10664-011-9161-0},
+  journal = {Empirical Softw. Engg.}
+}
+
+@inproceedings{HowMuchUpFrontGTAgile,
+  author    = {Waterman, Michael and Noble, James and Allan, George},
+  booktitle = {2015 IEEE/ACM 37th IEEE International Conference on Software Engineering},
+  title     = {How Much Up-Front? A Grounded theory of Agile Architecture},
+  year      = {2015},
+  doi       = {10.1109/ICSE.2015.54}
+}
+
+@article{InteractiveTheoremProving,
+  title   = {Interactive Theorem Proving: An Empirical Study of User Activity},
+  journal = {Journal of Symbolic Computation},
+  volume  = {25},
+  number  = {2},
+  pages   = {263-284},
+  year    = {1998},
+  issn    = {0747-7171},
+  doi     = {https://doi.org/10.1006/jsco.1997.0175},
+  url     = {https://www.sciencedirect.com/science/article/pii/S0747717197901759},
+  author  = {J.S. Aitken and P. Gray and T. Melham and M. Thomas}
+}
+
+@book{HOL,
+  author    = {Nipkow, Tobias and Wenzel, Markus and Paulson, Lawrence C.},
+  title     = {Isabelle/HOL: a proof assistant for higher-order logic},
+  year      = {2002},
+  isbn      = {3540433767},
+  publisher = {Springer-Verlag},
+  address   = {Berlin, Heidelberg}
+}
+
+@inproceedings{whiley,
+  author    = {Pearce, David J.
+               and Groves, Lindsay},
+  title     = {Whiley: A Platform for Research in Software Verification},
+  booktitle = {Software Language Engineering},
+  year      = {2013},
+  publisher = {Springer International Publishing},
+  address   = {Cham},
+  pages     = {238--248},
+  isbn      = {978-3-319-02654-1}
+}
+
+@inproceedings{ProductivityforProofEngineering,
+  author    = {Staples, Mark and Jeffery, Ross and Andronick, June and Murray, Toby and Klein, Gerwin and Kolanski, Rafal},
+  title     = {Productivity for proof engineering},
+  year      = {2014},
+  isbn      = {9781450327749},
+  publisher = {Association for Computing Machinery},
+  address   = {New York, NY, USA},
+  url       = {https://doi.org/10.1145/2652524.2652551},
+  doi       = {10.1145/2652524.2652551},
+  booktitle = {Proceedings of the 8th ACM/IEEE International Symposium on Empirical Software Engineering and Measurement},
+  articleno = {15},
+  numpages  = {4},
+  location  = {Torino, Italy}
+}
+
+@inproceedings{LargeScaleFormalVerification,
+  author    = {Andronick, June and Jeffery, Ross and Klein, Gerwin and Kolanski, Rafal and Staples, Mark and Zhang, He and Zhu, Liming},
+  booktitle = {2012 34th International Conference on Software Engineering (ICSE)},
+  title     = {Large-scale formal verification in practice: A process perspective},
+  year      = {2012},
+  volume    = {},
+  number    = {},
+  pages     = {1002-1011},
+  keywords  = {Kernel;Prototypes;Maintenance engineering;Abstracts;Analytical models;Computer bugs;program verification;microkernel;L4;software process;formal methods},
+  doi       = {10.1109/ICSE.2012.6227120}
+}
+
+@article{HowStaticallyTypedFunctionalProgrammersWriteCode,
+  author     = {Lubin, Justin and Chasins, Sarah E.},
+  title      = {How statically-typed functional programmers write code},
+  year       = {2021},
+  issue_date = {October 2021},
+  publisher  = {Association for Computing Machinery},
+  address    = {New York, NY, USA},
+  volume     = {5},
+  number     = {OOPSLA},
+  url        = {https://doi.org/10.1145/3485532},
+  doi        = {10.1145/3485532},
+  journal    = {Proc. ACM Program. Lang.},
+  month      = oct,
+  articleno  = {155},
+  numpages   = {30}
+}
+
+@inproceedings{RustUsability,
+  author    = {Kelsey R. Fulton and Anna Chan and Daniel Votipka and Michael Hicks and Michelle L. Mazurek},
+  title     = {Benefits and Drawbacks of Adopting a Secure Programming Language: Rust as a Case Study},
+  booktitle = {Seventeenth Symposium on Usable Privacy and Security (SOUPS 2021)},
+  year      = {2021},
+  isbn      = {978-1-939133-25-0},
+  pages     = {597--616},
+  url       = {https://www.usenix.org/conference/soups2021/presentation/fulton},
+  publisher = {USENIX Association},
+  month     = aug
+}
+
+@article{HowManyInterviewsAreEnough,
+  author  = {Greg Guest and Arwen Bunce and Laura Johnson},
+  title   = {How Many Interviews Are Enough?: An Experiment with Data Saturation and Variability},
+  journal = {Field Methods},
+  volume  = {18},
+  number  = {1},
+  pages   = {59-82},
+  year    = {2006},
+  doi     = {10.1177/1525822X05279903},
+  url     = {
+             https://doi.org/10.1177/1525822X05279903
+             },
+  eprint  = {
+             https://doi.org/10.1177/1525822X05279903
+             }
+}
+
+@book{charmaz2014constructing,
+  title     = {Constructing grounded theory},
+  author    = {Charmaz, Kathy},
+  year      = {2014},
+  publisher = {SAGE publications Ltd}
+}
+
+@article{ReliabilityInQualitativeResearch,
+  author     = {McDonald, Nora and Schoenebeck, Sarita and Forte, Andrea},
+  title      = {Reliability and Inter-rater Reliability in Qualitative Research: Norms and Guidelines for CSCW and HCI Practice},
+  year       = {2019},
+  issue_date = {November 2019},
+  publisher  = {Association for Computing Machinery},
+  address    = {New York, NY, USA},
+  volume     = {3},
+  number     = {CSCW},
+  url        = {https://doi.org/10.1145/3359174},
+  doi        = {10.1145/3359174},
+  journal    = {Proc. ACM Hum.-Comput. Interact.},
+  month      = nov,
+  articleno  = {72},
+  numpages   = {23}
+}
+
+@article{Coblenz2021:PLIERS,
+  author     = {Coblenz, Michael and Kambhatla, Gauri and Koronkevich, Paulette and Wise, Jenna L. and Barnaby, Celeste and Sunshine, Joshua and Aldrich, Jonathan and Myers, Brad A.},
+  title      = {PLIERS: A Process that Integrates User-Centered Methods into Programming Language Design},
+  year       = {2021},
+  issue_date = {August 2021},
+  publisher  = {Association for Computing Machinery},
+  address    = {New York, NY, USA},
+  volume     = {28},
+  number     = {4},
+  issn       = {1073-0516},
+  url        = {https://doi.org/10.1145/3452379},
+  doi        = {10.1145/3452379},
+  abstract   = {Programming language design requires making many usability-related design decisions. However, existing HCI methods can be impractical to apply to programming languages: languages have high iteration costs, programmers require significant learning time, and user performance has high variance. To address these problems, we adapted both formative and summative HCI methods to make them more suitable for programming language design. We integrated these methods into a new process, PLIERS, for designing programming languages in a user-centered way. We assessed PLIERS by using it to design two new programming languages. Glacier extends Java to enable programmers to express immutability properties effectively and easily. Obsidian is a language for blockchains that includes verification of critical safety properties. Empirical studies showed that the PLIERS process resulted in languages that could be used effectively by many programmers and revealed additional opportunities for language improvement.},
+  journal    = {ACM Trans. Comput.-Hum. Interact.},
+  month      = jul,
+  articleno  = {28},
+  numpages   = {53},
+  keywords   = {programming language design, Usability of programming languages}
+}
+
+@article{Rennels2023:How,
+  author     = {Rennels, Lisa and Chasins, Sarah E.},
+  title      = {How Domain Experts Use an Embedded DSL},
+  year       = {2023},
+  issue_date = {October 2023},
+  publisher  = {Association for Computing Machinery},
+  address    = {New York, NY, USA},
+  volume     = {7},
+  number     = {OOPSLA2},
+  url        = {https://doi.org/10.1145/3622851},
+  doi        = {10.1145/3622851},
+  abstract   = {Programming tools are increasingly integral to research and analysis in myriad domains, including specialized areas with no formal relation to computer science. Embedded domain-specific languages (eDSLs) have the potential to serve these programmers while placing relatively light implementation burdens on language designers. However, barriers to eDSL use reduce their practical value and adoption. In this paper, we aim to deepen our understanding of how programmers use eDSLs and identify user needs to inform future eDSL designs. We performed a contextual inquiry (9 participants) with domain experts using Mimi, an eDSL for climate change economics modeling. A thematic analysis identified five key themes, including: the interaction between the eDSL and the host language has significant and sometimes unexpected impacts on eDSL user experience, and users preferentially engage with domain-specific communities and code templates rather than host language resources. The needs uncovered in our study offer design considerations for future eDSLs and suggest directions for future DSL usability research.},
+  journal    = {Proc. ACM Program. Lang.},
+  month      = oct,
+  articleno  = {275},
+  numpages   = {32},
+  keywords   = {user experience, usability, need finding, embedded domain-specific languages, contextual inquiry}
+}
+
+@inproceedings{leino2010usable,
+  title     = {Usable auto-active verification},
+  author    = {Leino, K Rustan M and Moskal, Micha{\l}},
+  booktitle = {Usable Verification Workshop},
+  year      = {2010}
+}
+@inproceedings{anvil,
+  author    = {Xudong Sun and Wenjie Ma and Jiawei Tyler Gu and Zicheng Ma and Tej Chajed and Jon Howell and Andrea Lattuada and Oded Padon and Lalith Suresh and Adriana Szekeres and Tianyin Xu},
+  title     = {Anvil: Verifying Liveness of Cluster Management Controllers},
+  booktitle = {18th USENIX Symposium on Operating Systems Design and Implementation (OSDI 24)},
+  year      = {2024},
+  isbn      = {978-1-939133-40-3},
+  address   = {Santa Clara, CA},
+  pages     = {649--666},
+  url       = {https://www.usenix.org/conference/osdi24/presentation/sun-xudong},
+  publisher = {USENIX Association},
+  month     = jul
+}
+
+@article{AWSVerifiedAuthorization,
+  author = {Aleks Chakarov and Jaco Geldenhuys and Matthew Heck and Mike Hicks and Sam Huang and Georges Axel Jaloyan and Anjali Joshi and Rustan Leino and Mikael Mayer and Sean McLaughlin and Akhilesh Mritunjai and Clément Pit Claudel and Sorawee Porncharoenwase and Florian Rabe and Marianna Rapoport and Giles Reger and Cody Roux and Neha Rungta and Robin Salkeld and Matthias Schlaipfer and Daniel Schoepe and Johanna Schwartzentruber and Serdar Tasiran and Aaron Tomb and Emina Torlak and John Tristan and Lucas Wagner and Mike Whalen and Remy Willems and Jenny Xiang and Tae Joon Byun and Joshua Cohen and Ruijie Wang and Junyoung Jang and Jakob Rath and Hira Taqdees Syeda and Dominik Wagner and Yongwei Yuan},
+  title  = {Formally verified cloud-scale authorization},
+  year   = {2025},
+  url    = {https://www.amazon.science/publications/formally-verified-cloud-scale-authorization}
+}
+
+@inproceedings{Verismo,
+  author    = {Ziqiao Zhou and Anjali and Weiteng Chen and Sishuai Gong and Chris Hawblitzel and Weidong Cui},
+  title     = {{VeriSMo}: A Verified Security Module for Confidential {VMs}},
+  booktitle = {18th USENIX Symposium on Operating Systems Design and Implementation (OSDI 24)},
+  year      = {2024},
+  isbn      = {978-1-939133-40-3},
+  address   = {Santa Clara, CA},
+  pages     = {599--614},
+  url       = {https://www.usenix.org/conference/osdi24/presentation/zhou},
+  publisher = {USENIX Association},
+  month     = jul
+}
+
+@inproceedings{Leino2010Dafny,
+  author    = {Leino, K. Rustan M.},
+  editor    = {Clarke, Edmund M.
+               and Voronkov, Andrei},
+  title     = {Dafny: An Automatic Program Verifier for Functional Correctness},
+  booktitle = {Logic for Programming, Artificial Intelligence, and Reasoning},
+  year      = {2010},
+  url       = {https://doi.org/10.1007/978-3-642-17511-4_20}
+}
+
+@article{verus,
+  author  = {Andrea Lattuada and
+             Travis Hance and
+             Chanhee Cho and
+             Matthias Brun and
+             Isitha Subasinghe and
+             Yi Zhou and
+             Jon Howell and
+             Bryan Parno and
+             Chris Hawblitzel},
+  title   = {Verus: Verifying Rust Programs using Linear Ghost Types},
+  journal = {Proc. {ACM} Program. Lang.},
+  number  = {{OOPSLA1}},
+  pages   = {286--315},
+  year    = {2023},
+  url     = {https://doi.org/10.1145/3586037}
+}
+
+@inproceedings{fstar,
+  author    = {Swamy, Nikhil and Hri\c{t}cu, C\u{a}t\u{a}lin and Keller, Chantal and Rastogi, Aseem and Delignat-Lavaud, Antoine and Forest, Simon and Bhargavan, Karthikeyan and Fournet, C\'{e}dric and Strub, Pierre-Yves and Kohlweiss, Markulf and Zinzindohoue, Jean-Karim and Zanella-B\'{e}guelin, Santiago},
+  title     = {{Dependent Types and Multi-Monadic Effects in F*}},
+  year      = {2016},
+  url       = {https://doi.org/10.1145/2837614.2837655},
+  booktitle = {Principles of Programming Languages (POPL)}
+}
+
+@inproceedings{proof-plumber,
+  author    = {Cho, Chanhee and Zhou, Yi and Bosamiya, Jay and Parno, Bryan},
+  booktitle = {Proceedings of the Conference on Computer Aided Verification (CAV)},
+  code      = {https://github.com/verus-lang/verus-analyzer},
+  month     = {July},
+  title     = {A Framework for Debugging Automated Program Verification Proofs via Proof Actions},
+  year      = {2024}
+}
+
+@misc{mugnier2024laurel,
+  title         = {Laurel: Generating Dafny Assertions Using Large Language Models},
+  author        = {Eric Mugnier and Emmanuel Anaya Gonzalez and Ranjit Jhala and Nadia Polikarpova and Yuanyuan Zhou},
+  year          = {2024},
+  eprint        = {2405.16792},
+  archiveprefix = {arXiv},
+  primaryclass  = {cs.LO},
+  url           = {https://arxiv.org/abs/2405.16792}
+}
+
+@misc{Chakraborty2024,
+  title         = {Towards Neural Synthesis for SMT-Assisted Proof-Oriented Programming},
+  author        = {Saikat Chakraborty and Gabriel Ebner and Siddharth Bhat and Sarah Fakhoury and Sakina Fatima and Shuvendu Lahiri and Nikhil Swamy},
+  year          = {2024},
+  eprint        = {2405.01787},
+  archiveprefix = {arXiv},
+  primaryclass  = {cs.PL},
+  url           = {https://arxiv.org/abs/2405.01787}
+}
+
+
+
+@inproceedings{everparse,
+  author    = {Nikhil Swamy and
+               Tahina Ramananandro and
+               Aseem Rastogi and
+               Irina Spiridonova and
+               Haobin Ni and
+               Dmitry Malloy and
+               Juan Vazquez and
+               Michael Tang and
+               Omar Cardona and
+               Arti Gupta},
+  editor    = {Ranjit Jhala and
+               Isil Dillig},
+  title     = {Hardening attack surfaces with formally proven binary format parsers},
+  booktitle = {{PLDI} '22: 43rd {ACM} {SIGPLAN} International Conference on Programming
+               Language Design and Implementation, San Diego, CA, USA, June 13 -
+               17, 2022},
+  pages     = {31--45},
+  publisher = {{ACM}},
+  year      = {2022},
+  url       = {https://doi.org/10.1145/3519939.3523708},
+  doi       = {10.1145/3519939.3523708},
+  timestamp = {Sun, 19 Jan 2025 13:10:49 +0100},
+  biburl    = {https://dblp.org/rec/conf/pldi/SwamyRRSNMVTCG22.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+
+
+@article{TowardsAISynthesis,
+  author     = {Misu, Md Rakib Hossain and Lopes, Cristina V. and Ma, Iris and Noble, James},
+  title      = {Towards AI-Assisted Synthesis of Verified Dafny Methods},
+  year       = {2024},
+  issue_date = {July 2024},
+  publisher  = {Association for Computing Machinery},
+  address    = {New York, NY, USA},
+  volume     = {1},
+  number     = {FSE},
+  url        = {https://doi.org/10.1145/3643763},
+  doi        = {10.1145/3643763},
+  journal    = {Proc. ACM Softw. Eng.},
+  month      = jul,
+  articleno  = {37},
+  numpages   = {24},
+  keywords   = {Dafny, LLM, Program Synthesis, Program Verification}
+}
+
+@misc{dafnyBlog,
+  author       = {Aaron Tomb},
+  title        = {Clear Separation of Specification and Implementation in Dafny},
+  year         = {2023},
+  howpublished = {\url{https://dafny.org/blog/2023/08/14/clear-specification-and-implementation/}}
+}
+
+@misc{nehaSPLASH2024,
+  author       = {Neha Rungta},
+  title        = {Trillions of Formally Verified Authorizations a day!},
+  year         = {2024},
+  howpublished = {\url{https://2024.splashcon.org/details/splash-2024-keynotes/3/Trillions-of-Formally-Verified-Authorizations-a-day-}}
+}
+
+@article{Fink1997:Property,
+  author     = {Fink, George and Bishop, Matt},
+  title      = {Property-based testing: a new approach to testing for assurance},
+  year       = {1997},
+  issue_date = {July 1997},
+  publisher  = {Association for Computing Machinery},
+  address    = {New York, NY, USA},
+  volume     = {22},
+  number     = {4},
+  issn       = {0163-5948},
+  url        = {https://doi.org/10.1145/263244.263267},
+  doi        = {10.1145/263244.263267},
+  abstract   = {The goal of software testing analysis is to validate that an implementation satisfies its specifications. Many errors in software are caused by generalizable flaws in the source code. Property-based testing assures that a given program is free of specified generic flaws. Property-based testing uses property specifications and a data-flow analysis of the program to guide evaluation of test executions for correctness and completeness.},
+  journal    = {SIGSOFT Softw. Eng. Notes},
+  month      = jul,
+  pages      = {74–80},
+  numpages   = {7}
+}
+
+@book{cleanCode,
+  author    = {Martin, Robert C.},
+  title     = {Clean Code: A Handbook of Agile Software Craftsmanship},
+  year      = {2008},
+  isbn      = {0132350882},
+  publisher = {Prentice Hall PTR},
+  address   = {USA},
+  edition   = {1},
+  abstract  = {Even bad code can function. But if code isnt clean, it can bring a development organization to its knees. Every year, countless hours and significant resources are lost because of poorly written code. But it doesnt have to be that way.Noted software expert Robert C. Martin, presents a revolutionary paradigm with Clean Code: A Handbook of Agile Software Craftsmanship. Martin, who has helped bring agile principles from a practitioners point of view to tens of thousands of programmers, has teamed up with his colleagues from Object Mentor to distill their best agile practice of cleaning code on the fly into a book that will instill within you the values of software craftsman, and make you a better programmerbut only if you work at it.What kind of work will you be doing? Youll be reading codelots of code. And you will be challenged to think about whats right about that code, and whats wrong with it. More importantly you will be challenged to reassess your professional values and your commitment to your craft. Clean Code is divided into three parts. The first describes the principles, patterns, and practices of writing clean code. The second part consists of several case studies of increasing complexity. Each case study is an exercise in cleaning up codeof transforming a code base that has some problems into one that is sound and efficient. The third part is the payoff: a single chapter containing a list of heuristics and smells gathered while creating the case studies. The result is a knowledge base that describes the way we think when we write, read, and clean code.Readers will come away from this book understandingHow to tell the difference between good and bad codeHow to write good code and how to transform bad code into good codeHow to create good names, good functions, good objects, and good classesHow to format code for maximum readability How to implement complete error handling without obscuring code logicHow to unit test and practice test-driven developmentWhat smells and heuristics can help you identify bad codeThis book is a must for any developer, software engineer, project manager, team lead, or systems analyst with an interest in producing better code.}
+}
+
+@book{apsod,
+  author   = {Ousterhout, John},
+  title    = {A Philosophy of Software Design},
+  year     = {2018},
+  isbn     = {1732102201},
+  edition  = {1st},
+  abstract = {This book addresses the topic of software design: how to decompose complex software systems into modules (such as classes and methods) that can be implemented relatively independently. The book first introduces the fundamental problem in software design, which is managing complexity. It then discusses philosophical issues about how to approach the software design process, and it presents a collection of design principles to apply during software design. The book also introduces a set of red flags that identify design problems. You can apply the ideas in this book to minimize the complexity of large software systems, so that you can write software more quickly and cheaply.}
+}
+
+@article{arnold1996introduction,
+  title     = {An introduction to software change impact analysis},
+  author    = {Arnold, RS and Bohner, SA},
+  journal   = {Software Change Impact Analysis},
+  pages     = {1--26},
+  year      = {1996},
+  publisher = {IEEE Computer Society}
+}
+
+@misc{VerificationOptimization,
+  title = {Verification Optimization},
+  year  = {2023},
+  url   = {https://dafny.org/latest/VerificationOptimization/VerificationOptimization}
+}
+
+@inproceedings{XDsmith,
+  author    = {Irfan, Ahmed and Porncharoenwase, Sorawee and Rakamari\'{c}, Zvonimir and Rungta, Neha and Torlak, Emina},
+  title     = {Testing Dafny (experience paper)},
+  year      = {2022},
+  isbn      = {9781450393799},
+  publisher = {Association for Computing Machinery},
+  address   = {New York, NY, USA},
+  url       = {https://doi.org/10.1145/3533767.3534382},
+  doi       = {10.1145/3533767.3534382},
+  abstract  = {Verification toolchains are widely used to prove the correctness of critical software systems. To build confidence in their results, it is important to develop testing frameworks that help detect bugs in these toolchains. Inspired by the success of fuzzing in finding bugs in compilers and SMT solvers, we have built the first fuzzing and differential testing framework for Dafny, a high-level programming language with a Floyd-Hoare-style program verifier and compilers to C#, Java, Go, and Javascript. This paper presents our experience building and using XDsmith, a testing framework that targets the entire Dafny toolchain, from verification to compilation. XDsmith randomly generates annotated programs in a subset of Dafny that is free of loops and heap-mutating operations. The generated programs include preconditions, postconditions, and assertions, and they have a known verification outcome. These programs are used to test the soundness and precision of the Dafny verifier, and to perform differential testing on the four Dafny compilers. Using XDsmith, we uncovered 31 bugs across the Dafny verifier and compilers, each of which has been confirmed by the Dafny developers. Moreover, 8 of these bugs have been fixed in the mainline release of Dafny.},
+  booktitle = {Proceedings of the 31st ACM SIGSOFT International Symposium on Software Testing and Analysis},
+  pages     = {556–567},
+  numpages  = {12},
+  keywords  = {program verification, fuzzing, differential testing},
+  location  = {Virtual, South Korea},
+  series    = {ISSTA 2022}
+}
+
+@misc{DafnyVMCGuidelines,
+  title        = {Dafny VMC Guidelines},
+  howpublished = {\url{https://github.com/dafny-lang/Dafny-VMC/blob/main/Guidelines.md}},
+  year         = {2023}
+}
+
+@misc{IronfleetStyleGuide,
+  author       = {Microsoft Research},
+  title        = {Ironfleet Style Guide},
+  howpublished = {\url{https://github.com/microsoft/Ironclad/blob/2fe4dcdc323b92e93f759cc3e373521366b7f691/ironfleet/STYLE.md}},
+  year         = {2015}
+}
+
+@misc{MechanizedProofsPL,
+  author       = {Talia Ringer},
+  title        = {Mechanized Proofs for PL: Past, Present, and Future},
+  howpublished = {\url{https://blog.sigplan.org/2020/01/29/mechanized-proofs-for-pl-past-present-and-future/}},
+  year         = {2020},
+  month        = jan
+}
+
+@misc{emugnier_laurel_artifact,
+  author       = {Eric Mugnier and Yuanyuan Zhou and Ranjit Jhala and Michael Coblenz},
+  title        = {Artifact for "On the Impact of Formal Verification on Software Development"},
+  year         = 2025,
+  publisher    = {Zenodo},
+  doi          = {10.5281/zenodo.15761040},
+  url          = {https://doi.org/10.5281/zenodo.15761040},
+}
+
+@inproceedings {IronSpec,
+author = {Eli Goldweber and Weixin Yu and Seyed Armin Vakil Ghahani and Manos Kapritsos},
+title = {{IronSpec}: Increasing the Reliability of Formal Specifications},
+booktitle = {18th USENIX Symposium on Operating Systems Design and Implementation (OSDI 24)},
+year = {2024},
+isbn = {978-1-939133-40-3},
+address = {Santa Clara, CA},
+pages = {875--891},
+url = {https://www.usenix.org/conference/osdi24/presentation/goldweber},
+publisher = {USENIX Association},
+month = jul
+}
+
+@article{UsabilityLiquidTypes,
+author = {Gamboa, Catarina and Reese, Abigail and Fonseca, Alcides and Aldrich, Jonathan},
+title = {Usability Barriers for Liquid Types},
+year = {2025},
+issue_date = {June 2025},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+number = {PLDI},
+url = {https://doi.org/10.1145/3729327},
+doi = {10.1145/3729327},
+journal = {Proc. ACM Program. Lang.},
+month = jun,
+}
+
+@article{Haskell2010LanguageReport,
+author = {Marlow, Simon},
+year = {2010},
+month = {07},
+pages = {},
+title = {Haskell 2010 Language Report}
+}
+
+@inproceedings{vazou2014liquidhaskell,
+  title={LiquidHaskell},
+  author={Vazou, Niki and Seidel, Eric L and Jhala, Ranjit},
+  booktitle={Proceedings of the 2014 ACM SIGPLAN symposium on Haskell},
+  year={2014},
+  organization={ACM}
+}
+
+@article{laurel,
+author = {Mugnier, Eric and Gonzalez, Emmanuel Anaya and Polikarpova, Nadia and Jhala, Ranjit and Yuanyuan, Zhou},
+title = {Laurel: Unblocking Automated Verification with Large Language Models},
+year = {2025},
+issue_date = {April 2025},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {9},
+number = {OOPSLA1},
+url = {https://doi.org/10.1145/3720499},
+doi = {10.1145/3720499},
+}
+
+@inproceedings{proofactions,
+author = {Cho, Chanhee and Zhou, Yi and Bosamiya, Jay and Parno, Bryan},
+title = {A Framework for Debugging Automated Program Verification Proofs via Proof Actions},
+booktitle = {International Conference on Computer Aided Verification (CAV)},
+year = {2024},
+month = {July},
+url = {https://www.microsoft.com/en-us/research/publication/a-framework-for-debugging-automated-program-verification-proofs-via-proof-actions/},
+}

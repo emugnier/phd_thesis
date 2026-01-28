@@ -1,0 +1,118 @@
+\section{Results: Impact of Verification on Maintenance}
+\label{sec:maintain}
+
+Our findings contrast with the conventional
+wisdom that verification renders the
+code difficult to change and maintain,
+as each change requires updating the
+\emph{specification} and \emph{proof}
+in addition to the code.
+%
+In particular, our study shows
+participants found that formal
+specifications enabled the
+precise analysis of the \emph{impacts}
+of code changes, and hence,
+formal verification allowed for
+aggressive code \emph{optimizations}
+without fear of breaking functionality.
+
+\subsection*{Specification Enables Impact Analysis}
+
+Change impact analysis~\cite{arnold1996introduction} is about determining the implications of code changes. Several participants mentioned how specifications were
+a way to scope the effects of change, or as P5 put it,
+``another approximation of what will break [when code is changed].''
+%
+Indeed, P9 explains that this is one of the reasons
+they chose to verify their (reference) model in the
+first place as it allows them to ``see what happens if
+something has changed.''
+%
+The rationale is that if after a change in the code
+the specification fails to hold, participants could
+quickly infer what the behavior has been affected.
+%
+This allowed them to narrow the scope and move from
+``changing a whole thing into changing small things,''
+as P5 explained, potentially focusing testing efforts
+solely on the affected parts.
+%
+Additionally, repairing or retrofitting the specification
+and the proof with ``small fixes'' gave more confidence
+to P10 that their change did not have any outstanding effects.
+
+Finally, the specification itself can
+be used to \emph{argue for} a change.
+%
+Participant P7 reported an example where
+the specification exposed a ``non-local control flow''
+that was not obvious in the code.
+%
+This resulted in pushing for
+a simplification of the code,
+which translated to a simpler
+specification and proof.
+%
+Importantly, as P5 pointed out,
+all of this is only possible
+``after the first [verified] deployment,''
+as you can make these changes
+by using the existing specification.
+
+\subsection*{Verification Enables Fearless Optimization}
+
+Several participants reported that
+verification allowed them to implement,
+as P11 put it, ``optimizations that
+normal developer[s] would never [consider]''.
+%
+In fact, P12 explained that it is
+``where Dafny really pulled its weight''
+as ``localize[d] changes are easy and straightforward,"
+meaning that changes that do not deeply affect
+the specification can be quickly
+and confidently implemented.
+
+\mypara{Optimizing Computations.}
+%
+P5 described these changes as ``algorithmic optimization'':
+they do not modify the end result but instead simplify the underlying
+computation.
+%
+P7 reported using this as way to show results of verification early.
+%
+They individually verified one of the key functions
+of their system, that they then optimized before
+verifying the full system.
+%
+This allowed them to demonstrate the value
+of verification and get buy-in from various stakeholders.
+
+\mypara{Optimizing Redundant Checks.}
+%
+P12 and P13 reported using verification
+to remove redundant checks on function
+arguments, thereby speeding up the code,
+especially if the function is called often.
+%
+P12 explained that this is made possible
+by using \T{requires} clauses, which can
+check statically that the arguments are
+valid, and thus do not need to check them
+at runtime.
+
+\mypara{Modularity and Change.}
+%
+We observed a tension 
+ between breaking Dafny code into smaller pieces
+(methods and functions) to make checking faster and avoid
+brittle proofs \cref{sec:harden} versus maintainability.
+%
+For example, P10 noted ``you want methods to be very short […]
+So this creates a bunch of work. You have to write a spec for
+the intermediate function,'' which can complicate refactoring.
+%
+It can be difficult to build compact interfaces
+when each function is very small, as compact
+interfaces might require bundling together multiple functions
+---something often avoided to keep proofs small.

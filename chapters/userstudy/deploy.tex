@@ -1,0 +1,26 @@
+\section{Results: Impact of Verification on Assurance Methods}
+\label{sec:assure}
+\label{sec:deploy}
+
+In this section, we describe how formal verification
+affects the subsequent \emph{deployment} of software.
+%
+First, we show how verification influences \emph{testing}
+by on the one hand, removing the need to exhaustively test
+implementations, but instead shifting some of that effort
+to testing formal specifications themselves (\cref{sec:test}).
+%
+Second, we demonstrate how verification impacts \emph{code review},
+again by moving effort to reviewing specifications (not proofs),
+and the transpiled code generated in various target languages
+from the (verified) Dafny sources (\cref{sec:review}).
+%
+Third, we consider how the verified code is \emph{packaged}
+as libraries that can then be used by clients in production,
+and the constraints that such clients place on the verified
+development process itself (\cref{sec:package}).
+%
+Finally, we consider how verification impacts the long term
+\emph{maintenance} of software, by enabling formal analysis
+to delimit the impact of changes, and thus, fearless
+optimization (\cref{sec:maintain}).

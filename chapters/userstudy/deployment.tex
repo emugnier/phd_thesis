@@ -1,0 +1,164 @@
+\section{Results: Impact of Verification on Packaging}
+\label{sec:package}
+
+\myquote
+  {Any code you're taking from the
+   outside cannot have any preconditions
+   on it.}
+  {P7}
+
+Eight participants reported
+\emph{packaging} their verified Dafny
+code as a library that can be called
+in the target language after transpiling
+the verified code into the target language.
+Next, we describe the motivation behind
+such \emph{transpiler-based packaging}
+and the constraints it places on specification.
+
+\subsection*{Transpiling into Target Packages}
+
+Many participants reported choosing Dafny in 
+part because of its support for transpilation into
+multiple target languages.
+%
+P7 compared Dafny to F*, a similar automated
+verification language but with which ``connecting to \emph{Go}
+would have been a challenge.''
+%
+Most of our participants report transpiling
+to a \emph{single} target language: Rust (P2), Java (P4, P5, P6, P7, P9),
+C (P8) Go (P10), C\# (P11).
+
+
+\mypara{Verify Once, Run Everywhere.}
+%
+Only P12 and P13 reported using \emph{multiple} targets: Java, C\#, Go, Rust.
+%
+Interestingly they report this was the main reason they chose Dafny,
+in fact, prioritizing the ability to target multiple languages over the
+verification capabilities.
+%
+Dafny allowed them to write the implementation
+in one language which could then be transpiled
+to different targets.
+%
+They preferred this to having to write
+multiple implementations in different languages,
+or using FFIs, the former being too complicated
+to maintain, and the latter over-burdening
+the library's users.
+
+\mypara{The Importance of Correct Transpilation.}
+%
+The entire enterprise of verification
+only works if the transpiler for Dafny to the target
+language(s) works.
+%
+Eight participants mentioned this risk, which 
+ forces them to review the generated code as discussed
+in \cref{sec:review}.
+%
+P9 reported that ``they caused a few compiler crashes
+by just using it for months.''
+%
+P12 also pointed out that bugs in the compiled artifact
+are sometimes a product of these target languages changing
+with the example of Go that ``changes a lot between versions.''
+%
+We note, however, that Dafny has an extensive test suite
+for each of its runtimes and has also reported using XD Smith~\cite{XDsmith},
+a fuzzing framework for Dafny, to perform differential testing
+between the different transpilers.
+
+\mypara{Keep Dafny Close to the Target.}
+%
+The main challenge when targeting multiple
+languages is that ``writing Dafny code which is easily
+compilable to one language doesn't mean you've got Dafny code
+which is easily compilable to a different language.''
+%
+A few participants, P5, P7, and P9, also reported caring
+about readability of the target code, as per P5,
+``it will be the [transpiled] Java code that will be read
+by engineering and production teams.''
+%
+P13 observed that types and data
+structures are different between languages. 
+%
+Indeed, seven participants noted that
+the transpiler produces unoptimized, slow code.
+%
+P7 described the example of the Dafny built-in
+strings which, on transpilation, would induce
+"a bunch of painful, slow, useless copying of inputs.''
+
+To improve readability and performance,
+participants reported avoiding relying on the transpiler
+being smart, instead writing Dafny close to idiomatic target code.
+%
+For example, instead of using Dafny's
+built-in strings, they directly used types closer
+to those in the intended target.
+%
+This meant having to separate some part
+of the implementation depending on the target language,
+which has the downside of incurring a lot of
+additional work (instead of being able to rely on the
+transpiler.)
+%
+To reconcile this tension, P5, P6 and P7 reported
+using a bespoke transpiler: ``we are using this idiomatic
+compiler which is not destroying the code, because once you
+write things in Dafny, potentially, the original Dafny
+compiler may change data types and doesn't give you
+control over which data, operation or library you want
+to use.''
+
+\subsection*{Package Specifications}
+
+\mypara{Explicating Assumptions.}
+Several participants reported that packaging
+into libraries encourages developers to write
+concise specifications (\cref{sec:specification}).
+%
+P11 observed:
+``if the user of your program is
+  another program then it's more likely
+  that its API is understandable and compact.''
+%
+Further, as P6 observed, library packaging
+``brings consistency out of the box'' through
+a unified specification that ``makes it easier
+for service teams to know what the default behavior should be.''
+%
+This consistent behavior can be used
+as an argument for better reliability, and is
+also a way ``to reduce the efforts the
+engineers have to put integrating.''
+%
+Next, we describe how 
+packaging affects the \emph{assumptions at the boundaries}.
+
+\mypara{Enforcing Assumptions via Dynamic Checks.}
+%
+Indeed, avoiding assumptions on the input
+is the safest bet as invalid assumptions
+can impact the guarantees provided by
+verification.
+%
+To avoid that, P7 reported that they checked
+that the inputs are valid, through ``a wrapper [...]
+that would crash if the input didn't satisfy
+the preconditions that you need.''
+%
+Such run-time checks are not at odds with static verification
+guarantees, as these fail fast cases are included in the
+specification and are part of the contract of the library.
+%
+Interestingly, one participant reported using
+the opposite approach where they were willing
+to \emph{trust} that the unverified serializer and
+deserializer were giving them inputs that
+were correct, as they had control over
+the implementation of those components.

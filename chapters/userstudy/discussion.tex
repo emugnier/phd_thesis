@@ -1,0 +1,419 @@
+
+\section{Opportunities for Improving Verified Software Engineering}
+\label{sec:discussion}
+
+\myquote
+  {We have just spent less time thinking about
+   specifications and proof as first class citizens
+   than we have for programs.}
+  {P4}
+
+We now distill our findings into recommendations
+for improving verified software engineering.
+%
+We first discuss the implications of our
+findings on how the process of specification
+and proof could be simplified.
+%
+We then highlight ways to tighten the integration between
+verification and the rest of the development process, and
+to streamline the long-term maintenance of verified code.
+
+\subsection{Engineering Specification and Proof}
+
+The assessment from P4 at the start
+of the section summarizes the sentiment
+that if we are to fully exploit
+the capabilities of verifiers,
+we need to find ways to make
+\emph{proving} as accessible
+as \emph{programming}.
+%
+One indication of the current gap between the two is the observation that the perception
+of the verifier depends on the background of the participants.
+%
+On one hand, participants with a formal methods background
+appreciate Dafny's ``simplicity'' (P7), and reported that
+they learned it ``on the fly'' (P5).
+%
+On the other hand, participants with a software engineering
+background complained that the learning curve is ``steep'' (P1)
+and sometime struggle to see the value of the extreme effort
+they put to not only learn but also to use the verifier.
+%
+We can learn from both perspectives.
+%
+The formal methods view suggests that verification in Dafny
+is feasible for many large-scale software systems but requires substantial effort and specialized skills.
+%
+The software engineering view suggests that we are not
+yet at a point where the available resources and tooling
+make this effort feel pleasurable or worthwhile for most software engineers.
+
+To this end, we recommend two areas of improvement
+to advance verified software engineering
+as a more mainstream and accessible practice.
+%
+First, we should study what constitutes a clean proof.
+%
+Second, we should enhance the interactivity of the verifier.
+%
+We believe Dafny as language has made significant strides
+towards this goal, with more than fifty releases since its
+creation, introducing new features, bug fixes, performance
+improvements, better error messages, and an improved client.
+%
+However, there are still complicated research problems that
+we need to solve as a community.
+
+\subsection*{What is a Good Proof?}
+%
+Further research should identify what constitutes a good proof and
+develop ways of \emph{enforcing} these lessons via style guides or
+linters.
+%
+As we have seen, techniques can help write
+the specification (\cref{sec:specification})
+and the proof (\cref{sec:implementation})
+to prevent problems such as unsoundness
+or incompleteness.
+%
+However, how to write clear, performant,
+and robust (not brittle) verified code is still
+an open question. The answer will likely differ across users or projects.
+%
+While some style guides exist in different projects~\cite{IronfleetStyleGuide,DafnyVMCGuidelines}, they are not extensive, and they do not
+explain the rationale behind the style choices.
+%
+Although the Dafny IDE provides visual
+cues to identify potential problems along with
+the warnings in the client itself, it is not
+configurable.
+%
+Additionally, the available warnings are
+somewhat limited, as for example they do not cover aspects such as variable naming.
+
+\mypara{Recommendation: Style Guides and Linters.}
+%
+Since different users will likely need different guidelines, we need
+to be able to enforce these guidelines through
+linters in a configurable manner.
+%
+Thus, we recommend that the auto-active
+verification community work on extensible
+linters like \citet{isabelle-linter} and
+quantitative analyses like \citet{isabelle-formalization-quality}
+to identify good proof styles and patterns.
+%
+Further, we recommend adapting 
+efforts like \citet{cleanCode} and \citet{apsod},
+to the intersection of specifications, code,
+and proof. These efforts would go beyond existing style guides
+by providing general guidelines
+for naming conventions, code organization,
+and proof structure.
+
+\subsection*{How to Improve Interactivity}
+
+Development with verifiers 
+can feel like a slog
+in the dark, trying to decipher
+error messages and avoid
+unpredictable timeouts, while
+guided only by pricks of light
+from manually inserted assertions
+(\cref{sec:debug})
+%
+Dafny integrates \emph{counterexamples} 
+into the Dafny IDE
+and CLI \cite{dafny-counterexamples}
+that are supposed to help with debugging.
+%
+However, in our study, only P4
+reported using counterexamples,
+and with mixed results:
+``It can't really give you a counterexample,
+  or the counterexample it gives you is because
+  it has insufficient visibility into the objects
+  of the counterexample, and distinguishing those
+  situations from genuine counterexamples […] requires experience.''
+Alternatively, tools like ProofPlumber~\cite{proofactions} 
+can suggest potential fixes, and Laurel~\cite{laurel}
+can automatically generate assertions.
+%
+In practice, however, they
+remain sparsely used, due to limited support and engineering resources.
+%
+The situation
+may be improved by introducing
+better \emph{feedback mechanisms}
+that make the verifier's context
+more explicit, and hence the process
+of proving more \emph{interactive},
+which might help users more easily
+build a mental model.
+%
+``You could visualize the context
+of what the verifier receives, and you could
+define what that means […] that would help bring
+it closer to the predictability of Rocq proofs'' (P10).
+%
+Of course, achieving this
+is not straightforward,
+as it requires \emph{defining}
+what ``context'' means
+in the auto-active
+verifier's case, and finding
+a good way to \emph{visualize}
+such contexts.
+
+\mypara{Defining Contexts.}
+%
+One approach is to define
+the context as all the
+assumptions gathered from
+the code that apply to a
+given assertion, which
+would reduce the need
+to constantly navigate
+back and forth in the code
+to check lemma definitions
+and their postconditions.
+%
+However, this would not
+entirely bridge the gap
+between the verifier and
+the user, as the SMT solver
+can infer new facts that
+are \emph{consequences} of
+the above assumptions,
+but are not explicit
+in the code.
+%
+Explicating such facts
+is hard for two reasons.
+%
+First, these facts may,
+for example, capture
+relationships that are not
+present in the code.
+%
+Indeed, some relationships may be
+syntactically inexpressible, as, \eg
+they may be about the values of
+the same variable but at different points
+in time.
+%
+Second, we want to avoid overwhelming
+the developer with excessive information
+that is irrelevant or is overly complex.
+
+\mypara{Visualizing Contexts.}
+%
+Another challenge is determining
+the best way to visualize proof contexts.
+%
+One approach is to adopt
+something similar to Rocq or Lean,
+where the user can see the context
+of the proof at any time.
+%
+However, it is unclear whether this
+is the best approach, as unlike
+proof assistants, verifiers might
+present incomplete or redundant information.
+%
+Another possibility is to allow users
+to interactively query the solver,
+similar to debuggers that
+display values at runtime.
+%
+Participant P10 described this idea:
+%
+``you're running an application […]
+  it throws a seg fault […] and
+  then [in GDB] you're paused
+  in the in the current stack
+  effectively.
+  I would love […] being able to drop
+  into some kind of 
+  interactive environment
+  where I could probe […]
+  the state of the solver,
+  or […] ask to solve normal
+  questions more interactively.''
+%
+A counterargument to this
+approach is that users
+are already effectively
+doing this when they
+insert assertions to
+debug their proofs.
+
+\mypara{Recommendation: Incremental \& Interactive Contexts.}
+%
+Thus, we believe the path forward is to
+find ways to appropriately determine the entire
+context that is relevant at a given program point
+or place where a verification error is reported
+and find ways to either visualize it completely---or interactively in the style of a debugger.
+
+\subsection{Integrating Verification with Other Development Processes}
+
+Our study shows that other than the specification and proof
+phases (\cref{sec:build}), many of the other phases of the
+verified software development process are similar to those
+of (non-verified) software engineering.
+%
+For example, as noted by P7 (\cref{sec:test}),
+testing and verification are orthogonal, and
+projects that pushed their products to production
+still relied on some form of testing.
+
+However, our study also shows that these
+processes are currently disconnected.
+%
+Many participants reported having to build
+custom tooling to integrate their verified
+code into the traditional development process.
+%
+For example, P12 and P13 discussed Duvet,
+a tool developed in house, to connect
+informal \emph{requirements} and formal
+specifications, and P4 built a client
+to \emph{test} the reference model itself.
+%
+Similarly, P7 and P6 created custom scripts
+to generate separate \emph{code reviews} for
+the different artifacts, \ie, the generated
+(transpiled) code and the specification.
+%
+Additionally, several participants expressed
+a desire for tools that would bridge the gap
+between the verified code and the broader
+software development process.
+%
+Consequently, we recommend lines of
+work to more tightly integrate the formal
+specifications and proof with \emph{testing},
+\emph{review}, and \emph{versioning}.
+
+
+\subsection*{Specification \& Testing}
+
+Several participants expressed a desire
+for better integration between testing
+and specification.
+
+\mypara{Recommendation: Testing External Library Contracts.}
+%
+Tests are particularly useful in validating
+the axiomatically trusted contracts for
+external library code (\cref{sec:test}).
+%
+For example, P7 noted that
+``It would be nice to have 
+a standard library for Java that was
+tested against all of the axioms we
+wrote about those about the library
+functions.''
+%
+One could imagine a tool that automatically
+generates tests to confirm or refute such
+contracts \cite{target,IronSpec}.
+%
+While such a tool would not provide the same
+level of guarantees as verifying the library,
+it could identify issues prior to
+end-to-end testing, which is when participants
+reported discovering them.
+%
+P13 proposed a more radical
+approach: a framework where specifications
+``rests its truth on execution.'' % -- (P13).
+%
+In this model, a lemma would be
+converted into tests, allowing
+developers to bypass proof
+obligations and instead
+confirm correctness by
+testing.
+%
+Such a framework could serve
+as a practical way to \emph{bootstrap}
+the specifications, particularly for
+well-known algorithms where proving
+correctness is tedious.
+
+\mypara{Recommendation: External Library Contracts from Tests.}
+%
+Dually, we envision using existing tests to
+be automatically generate the library contracts.
+%
+As discussed in \cref{sec:specification},
+the primary challenge when using tests as
+a way to infer the specification
+is to generalization, perhaps by
+using ideas from the literature
+on generalizing dynamic executions
+into invariants \cite{daikon}.
+
+\subsection*{Verification \& Code Review}
+
+Verified code reviews tend to be 
+long and error-prone (\cref{sec:review}).
+%
+In contrast, in the programming languages
+community, proof assistants are increasingly
+used to \emph{shorten} papers by omitting
+explicit proofs, letting reviewers 
+focus on the theorems, since the proof
+is machine verified~\cite{MechanizedProofsPL}.
+%
+Unfortunately, in the case of verified code, we 
+contend with the additional challenges of
+%
+(1)~the proof being intertwined
+with the implementation, and
+%
+(2)~the requirement that the code itself be readable
+and maintainable: reviewing the specification alone
+is often insufficient as the reviewer must also
+assess algorithmic complexity of the code and
+the maintainability of proofs (\cref{sec:review}).
+
+\mypara{Recommendation: Multiview Reviews.}
+%
+Consequently, we recommend rethinking
+how verified code is reviewed, by adopting
+a more tool-structured separation of concerns.
+%
+Currently, a review has a single monolithic
+textual diff, making it difficult to focus on
+individual aspects.
+%
+Instead P12 proposed an approach where a tool
+that enabled targeted reviews by
+%
+``Hiding all the comments,
+all the asserts, the
+requires, the assumes,
+and everything that
+doesn't generate code.
+%
+And let me just see
+the actual executable
+bits just to be able
+to see what's happening.''
+%
+A strictly one-component-at-a-time
+approach might be too simplistic,
+as it might blind reviewers to
+relationships between different
+parts of the verified code.
+%
+A more flexible design could
+enable reviewers to toggle
+their focus while still
+maintaining a holistic
+view of the codebase.

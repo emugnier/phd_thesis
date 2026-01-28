@@ -1,0 +1,75 @@
+\section{Background}\label{sec:background}
+
+We assume in this paper, a basic familiarity with auto-active
+verifiers like Dafny \cite{Leino2010Dafny}.
+
+\mypara{Contracts and Verification Conditions.}
+%
+\begin{figure}[t]
+\begin{dafny}
+method applyDiscount (x : real, percent : real) returns (res : real)
+  requires 0.0 <= x
+  requires 0.0 <= percent
+  requires percent <= 100.0
+  ensures 0.0 <= res 
+  // Example of MISSING POSTCONDITIONS
+  // ensures (0.0 < x ==> res <= x) || (percent == 0.0)
+{
+  var factor := percent / 100.0;
+  assert 0.0 <= factor <= 1.0;
+  // MISSING HINT
+  // assert x <= 0.0 && factor <= 0.0 ==> 0.0 <= x * factor;
+  res := x * factor;
+}
+\end{dafny}
+\begin{dafnyNoLines}[basicstyle=\footnotesize\ttfamily,xleftmargin=0pt,xrightmargin=0pt]
+    Error: a postcondition could not be proved on this return path
+    Could not prove: 0.0 <= res
+    \end{dafnyNoLines}
+    \caption{Example of a failing Dafny method with missing assertion and preconditions, reported by P9}
+    \label{fig:simpleMathError}
+\end{figure}
+%
+As a brief refresher, consider the code in \cref{fig:simpleMathError},
+which shows a method that takes two inputs \T{x} and \T{percent}
+and returns an output \T{res}.
+%
+The method's contract  has a \emph{pre-condition} specified
+by the \T{requires} clause, which says that the input \T{x}
+must be non-negative, and that the input \T{percent} must be between 0 and 100.
+%
+The method's contract also has a \emph{post-condition} specified
+by the \T{ensures} clause, which states that the output \T{res}
+is non-negative.
+%
+Dafny uses the specification and the implementation to
+generate a verification condition (VC): a logical formula
+whose validity implies that the implementation satisfies
+its contract.
+
+\mypara{Auto-Active-Proof: Assertions, Hints and Lemmas.}
+%
+While the SMT solver can prove many VCs (valid),
+more complex programs or specifications yield VCs
+that are outside the \emph{decidable} theories
+implemented by the solver.
+%
+For example, even the VC from \cref{fig:simpleMathError}
+uses a non-linear arithmetic, arising from the multiplication
+in the method body.
+%
+When this happens, sometimes the SMT solver's heuristics suffice,
+but often, the developer has to provide an explicit \emph{hint}
+in the form of an \T{assert} statement (shown as a comment)
+that encodes the relevant mathematical fact as part of the VC.
+%
+Sometimes, these mathematical facts are over recursively defined
+functions, must themselves be proved via separately defined
+recursive (inductive) functions which effectively act as
+\emph{lemmas}, which may then be used to prove a given VC
+by appropriately invoking the lemma in an \T{assert}.
+%
+Hence, Dafny, and related tools are often referred to as
+\emph{auto-active} verifiers, to distinguish them from
+fully \emph{interactive} verifiers like Rocq or Lean
+which do not use SMT automation.

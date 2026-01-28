@@ -1,0 +1,322 @@
+\subsection{Specification} \label{sec:specification}
+
+\myquote{Whenever you pick a language to write the pseudocode in,
+it starts to shape your idea of what the implementation is.}{P13}
+
+Developers report
+that verifiers influence
+\emph{when} they write specifications,
+\emph{what} sources they use to derive specifications, and
+\emph{how} they actually write the specifications to minimize risks of unsoundness
+and simplify the downstream verification.
+
+\subsection*{When to Specify}
+
+Participants report writing the specification at different stages
+of the development, depending on the risks they want to mitigate.
+%
+Participants P12 and P13 develop the specification and implementation \emph{concurrently}.
+This approach minimizes the cost as they can iterate between the two to
+incorporate missing details from the code into the specification or inversely.
+%
+Some participants, like P5, P7, and P11, \emph{start with the specification} to ensure
+the design makes sense. Specifying first allows to ``get a better understanding
+of the code'' (P7) and minimize the risk of writing an incorrect
+implementation by stating its invariants first. 
+%
+Finally, P6 and P9 \emph{begin by writing a working implementation} in Dafny before
+attempting to prove it.
+%
+Their goal is to have a working proof of concept that can be tested on real
+data before focusing on verification.
+%
+Using this method, they can showcase the feasibility of the project quickly and
+secure their peers' support.
+
+
+\subsection*{What to Specify}
+%
+To write specifications, participants used different sources of data:
+--- \emph{documentation}, \emph{design documents}, \emph{tests}, and
+\emph{code} --- to determine the important properties of their system.
+%
+Each of these sources provides partial information, and so developers
+choose to combine them to get a complete picture of the overall specification.
+
+\mypara{Specifications from Documentation.}
+P5 reports extracting specifications from documentation:
+%
+% \begin{quoted}
+``You can look at the documentation, and you can guess
+things are semi formalized, like sentences that are written in natural
+language, but that describes mathematical proprieties like boolean properties.''
+% \end{quoted}
+%
+However, documentation is often incomplete and vague, which introduces the risk
+of writing a specification that is too weak or potentially incorrect.
+%
+To prevent the latter, P12 and P13 write an informal specification first,
+using RFC 2119~\cite{rfc2119} semantics, with keywords such as \verb+MAY+
+and \verb+MUST+.
+%
+This informal specification, inspired from their design document
+deliberately avoids pseudocode or reference to any elements of the
+code, as, participant P13 noted: ``Whenever you pick a language
+to write the pseudocode in, it starts to shape your idea of what
+the implementation is, and you start to make assumptions.''
+
+To connect their specification with the code, P12 and P13
+use Duvet~\cite{duvet}, which inserts requirements
+text as comments in corresponding code sections.
+%
+Developers then translate these informal specifications
+into Dafny contracts, as illustrated in the simplified
+example given by P13 shown in \cref{fig:duvet_example}.
+%
+\begin{figure}[b]
+    \begin{dafny}
+//= aws-encryption-sdk-specification/framework/aws-kms/aws-kms-keyring.md#onencrypt
+//= type=implication
+//# If the input [encryption materials](../structures.md#encryption-
+//# materials) do contain a plaintext data key, OnEncrypt MUST
+//# attempt to encrypt the plaintext data key
+ensures
+ && input.materials.plaintextDataKey.Some?
+ ==>
+  && KMS.IsValid_PlaintextType(input.materials.plaintextDataKey.value)
+  && 0 < |client.History.Encrypt|
+    \end{dafny}
+    \caption{Simplified example of an informal Duvet specification manually translated into Dafny.}\label{fig:duvet_example}
+    \end{figure}
+%
+This example includes
+%
+(1)~ a \emph{comment} that is extracted
+by Duvet from the informal specification
+\textit{aws-kms-keyring.md} (lines 2-4) and
+(2)~a Dafny \emph{post-condition} with
+the \T{ensures} keyword (lines 5-7).
+%
+The latter is the developer's formalization
+of the natural language comment: if the input contains
+a plaintext data key, then the encryption
+context must be successful.
+%
+P13 explained that this structured process
+has been highly effective:
+%
+``the person who's writing the design [now has]
+a mechanism to make sure the person who's writing
+[the code] does what they want --- give them some
+evidence that it's correct.''
+%
+This process avoids imprecision from natural language
+documentation, as every property is
+linked to an RFC-style statement.
+%
+However, the process is costly to design and maintain
+since it introduces another layer of translation.
+
+\mypara{Specifications from Tests.}
+%
+Some participants derive specifications from
+existing tests. For example, P6 described their method as
+``generalizing the tests which exist into theorems.''
+%
+The benefit of this method is that the tests provide
+a good sense of what should be true or not about each
+part of the system.
+%
+The challenge with this approach is that these tests
+``are obviously like specific points within that space''
+meaning they must find a specification that covers
+``all the inputs.''
+
+\mypara{Specifications from Code.}
+%
+P5 studies the code:
+``it gives you a lot of implementation details,'' which
+are not always tested or documented, such as
+``what kind of error is sent when you have this thing that is invalid?''
+%
+However, reading the code to infer the specification is often
+a tiresome task, that P4 described as:
+%
+``extremely time-consuming to [...] stare at the Java and
+try to figure out the abstract properties.''
+%
+In other words, it is not always clear what the code
+\emph{is} doing, and hence, even less what properties
+\emph{should} hold about it.
+%
+To address this, P4 resorted to ignoring details that
+are not pertinent to the specification, stating that
+``many implementation details in the middle were irrelevant.''
+
+\subsection*{How to Specify}
+
+Developers described using two main strategies to simplify
+formal verification: writing \emph{purely functional} specifications
+that minimize reasoning about imperative updates, and then
+further \emph{abstracting} the specifications to focus
+the aspects germane to downstream proof.
+
+
+\mypara{Pure (Functional) Specifications.}
+%
+Participants often reported using functional \T{function}
+specifications that describe the behavior of imperative \T{method}
+implementations, as this eases verification by
+providing a pure (side-effect free) representation
+of the implementation.
+%
+Verifiers have an easier time with
+functional code as it maps more directly to the logical
+representations needed for formal verification. It also
+enables equational reasoning while eliminating the need for complex
+\emph{frame conditions} that specify what may change
+in the program state, the need to track \emph{aliasing}
+relationships, and complex \emph{control-flow}.
+%
+The effectiveness of this strategy
+of writing pure functional specifications is
+well-established in the research literature~\cite{compcert, sel4, ironfleet}.
+
+\begin{figure}[t]
+\begin{dafny}
+method UpperBoundedAdditionImpl(x:uint64, y:uint64, u:uint64) returns (sum:uint64)
+  ensures sum as int == UpperBoundedAddition(x as int, y as int, UpperBoundFinite(u as int));
+{
+  if y >= u {
+    sum := u;
+  } else if x >= u - y {
+    sum := u;
+  } else {
+    sum := x + y;
+  }
+}
+\end{dafny}
+\begin{dafny}
+function UpperBoundedAddition(x:int, y:int, u:UpperBound):int
+{
+  // LeqUpperBound checks if a given integer x
+  // is less than or equal to the specified upper bound u.
+  if LeqUpperBound(x + y, u) then x + y else u.n
+}
+\end{dafny}
+\caption{Example functional specification of an imperative method ~\cite{IronfleetExample}}\label{fig:IronfleetExample}
+\end{figure}
+
+P5, P7, P8, P10, and P11 reported using functional
+specifications to describe properties of imperative methods, allowing the use of \emph{local}, \emph{compositional}
+and \emph{equational} or \emph{algebraic} reasoning to prove
+properties of the implementation.
+%
+\Cref{fig:IronfleetExample} shows an example extracted from a participant's project. %P11 
+%
+The method \T{UpperBoundedAdditionImpl} implements
+the addition of two bounded integers,
+\T{x} and \T{y}, with an upper bound \T{u}.
+%
+In the \T{ensures} clause, the method specifies
+that the result \T{sum} must be equal to the result
+of the \T{function} specification \T{UpperBoundedAddition}.
+%
+\T{UpperBoundedAddition}
+is a pure function that takes two \emph{unbounded}
+integers \T{x} and \T{y} and an upper bound \T{u}
+and returns the sum of \T{x} and \T{y} if it
+is less than or equal to \T{u}; otherwise,
+it returns the upper bound \T{u}.
+%
+The main differences between the implementation
+and the specification are
+%
+(1)~the types: the implementation uses \T{uint64}
+while the specification uses \T{int} and
+(2)~the control flow: the implementation
+has multiple assignments to \T{sum}
+while the specification is a single expression.
+
+These differences align with observations
+made by P4 and P5 regarding functional code.
+%
+As the former highlights, functional code
+``makes state updates explicit'' by reifying
+such updates as \emph{named} values in the code
+which simplifies the subsequent verification as
+``Dafny has a significantly easier time proving
+things about functional code.''
+%
+P5 further emphasizes that ``your specification needs to be pure,''
+arguing that purity inherently improves design by making side effects
+explicit.
+%
+In this case, \T{UpperBoundedAddition} being a pure function
+simplifies verification by removing the need for Dafny
+to reason about the intermediate (implicit) state changes
+of the imperative implementation.
+
+Of course, one might wonder why the developers did
+not write the implementation in a functional
+style in the first place.
+%
+The reason is that the imperative version is more
+computationally efficient: it short-circuits as soon
+as it finds a satisfying condition, avoiding computing
+the sum of \T{x} and \T{y} when unnecessary.
+%
+Thus, we found developers write functional specifications
+to get a clear, concise, and verification friendly
+representations of efficient-to-execute imperative
+implementations.
+
+\mypara{Abstracting Specifications.}
+%
+While a functional specification is easier to verify,
+its explicit nature can still bog down downstream
+verification with irrelevant information.
+%
+Developers address this problem by abstracting the specifications
+to only expose properties that are relevant for verification.
+%
+To illustrate the complexity of specifying imperative code,
+P8 referenced a paper showcasing the powers
+of Dafny~\cite{leino2008specification}.
+%
+They described a simple method for adding an element
+to a singly linked list, which involves just a few
+lines of code. Yet, verifying that this method is
+correct required substantial effort as it requires
+``proving that you know that no pointers are pointing
+anywhere that you don't want them to be pointing.
+And it just takes a lot of work to say exactly where
+you want them to be pointing to.''
+%
+P11 explained that this verbosity can have negative consequences on the
+soundness of the specification, especially when the functional specification
+is similar to the implementation 
+``because you're just as likely to
+have a bug in your specification as you are in your implementation.''
+
+To improve clarity, P11 described using different levels of abstraction.
+%
+First, they write a functional specification equivalent to the implementation,
+similar to the one described in \Cref{fig:IronfleetExample},
+where \emph{implementation} types like vectors and hash maps
+are replaced by \emph{logical} sequences and maps,
+to simplify reasoning.
+%
+Second, they introduce another layer that ``hides the details
+of the algorithm and exposes an interface.''
+%
+This separation, they noted is ``valuable for verifying different components of
+your system independently of each other''.
+%
+Finally, as P7 mentioned, they define main theorems under
+the form of Dafny \T{predicate}, which are pure mathematical functions that return
+a boolean value,
+to ``capture'' the global invariants of the code.
+%
+This approach encapsulates the low-level details of the implementation
+and summarizes the ``theorem [...] in half a page of text''.

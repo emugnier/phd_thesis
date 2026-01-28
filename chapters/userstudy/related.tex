@@ -1,0 +1,99 @@
+\section{Related work}
+
+
+\mypara{Usability of Automated Verifiers.}
+To our knowledge, Dafny is the main automated verifier whose usability has been
+studied, primarily through case studies or experience reports.
+% 
+\citet{CaseStudiesDafny} presents ten cases of verifying well-known algorithms
+in Dafny, highlighting challenges such as proof debugging and the
+need for specification testing.
+%
+We found that these issues also apply to larger scale verification projects
+and explores the impact of the software
+development process, including testing, deployment, and maintenance.
+%
+Other studies have examined the experience of verifying programs in
+Dafny~\cite{DafnyDala,ColouringFlagsDafnyIdris} or teaching Dafny to students~\cite{LearnEmDafny}. 
+%
+Notably, they also recognize that while verifying in Dafny is time-consuming, 
+its similarity to imperative programming makes it accessible.
+%
+\citet{ColouringFlagsDafnyIdris} compares the Idris proof assistant to Dafny,
+finding that Dafny enables shorter proofs but
+lacks transparency about its correctness.
+%
+This supports our findings in \cref{sec:debug}: while proof assistants may be more complex, they seem more interactive than automated tools such as Dafny.
+
+\citet{UsabilityHypothesesVerification} presents usability hypotheses based on their
+experience with Whiley~\cite{whiley}.
+%
+Our findings confirm some of their hypotheses, particularly regarding the 
+difficulty of writing assertions and the necessity of testing specifications to detect errors.
+%
+\citet{UsabilityLiquidTypes} studies the usability of LiquidHaskell~\cite{vazou2014liquidhaskell},
+which is integrated with Haskell~\cite{Haskell2010LanguageReport}.
+%
+While some of their findings are specific to LiquidHaskell, such as the
+unclear divide between Haskell and the Liquid types, they share some of our findings,
+such as the difficulty of understanding certain error messages.
+
+\mypara{Usability of Verification Tools at Large.}
+%
+Prior studies have applied human-centered interaction approaches to understand 
+the challenges users face with proof assistants.
+%
+While they differ in programming models and automation techniques,
+they ultimately achieve the same goal and can
+provide valuable insights.
+%
+\citet{qed-in-context} presents a contextual study of Rocq and Lean users,
+analyzing how users engage with these tools within their own projects.
+%
+Although they focus on immediate interaction rather than the development process at large,
+they similarly highlight the importance of interactivity and proof design.
+%
+\citet{InteractiveTheoremProving} study seven HOL~\cite{HOL} users implementing
+list data structures. They found that experts completed the task more efficiently
+than novices.
+%
+While one might expect that verifiers' automation would alleviate this problem,
+we observe similar issue due to the lack of interactivity.
+
+Other works~\cite{ProductivityforProofEngineering,LargeScaleFormalVerification} have
+examined one of the largest formal
+verification projects, the seL4 microkernel~\cite{sel4}, documenting insights from real-world verification.
+%
+Similarly to our study, some of their findings only appeared at
+scale, such as the relation between verification and performant code,
+underscoring the need to study large projects.
+
+
+Survey studies~\cite{QEDAtLargeSurvey,huang2024lessonsformallyverifieddeployed}
+have analyzed formal verification projects and the
+lessons they offer.
+%
+\citet{QEDAtLargeSurvey}, presents the concept of proof engineering,
+---designing scalable proofs through careful structuring.
+%
+While Dafny requires
+different design considerations, we also observe the importance of
+engineering proofs effectively.
+
+\mypara{Usability of Programming Languages and Software Development Tools.}
+Several works have applied qualitative methods to understand the usability of programming
+languages~\cite{Coblenz2021:PLIERS,HowStaticallyTypedFunctionalProgrammersWriteCode,RustUsability,Rennels2023:How} and their tools
+\cite{GroundedCopilot}.
+%
+Like our study, \citet{RustUsability}, also interviewed
+developers to understand the benefits and challenges of a language, Rust.
+%
+While Rust offers different guarantees from Dafny, it has a steep learning curve
+and requires significant effort to write correct code, similar to what we found with Dafny.
+%
+Finally, several studies have explored software development practices and
+their impact on the final deliverables, for example focusing on how
+software development is applied~\cite{ReconcilingPerspectivesGT} or the effect of agile
+methodologies~\cite{HowMuchUpFrontGTAgile}.
+%
+Our study uses a similar approach to understand a different domain---verification with automated verifiers.
